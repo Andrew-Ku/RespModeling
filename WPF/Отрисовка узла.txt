@@ -1,0 +1,14 @@
+  <TextBlock Text="2"
+           Height="40"
+           Width="40"
+           Padding="8,10,0,0" Margin="355,212,365,253">
+            <TextBlock.Background>
+                <VisualBrush>
+                    <VisualBrush.Visual>
+                        <Ellipse Height="20"
+                  Width="20"
+                  Fill="LightBlue" />
+                    </VisualBrush.Visual>
+                </VisualBrush>
+            </TextBlock.Background>
+        </TextBlock>

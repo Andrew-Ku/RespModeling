@@ -1,0 +1,21 @@
+﻿<Window x:Class="MyFirstWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Пример компоновки" Height="auto">
+    <DockPanel HorizontalAlignment="Left" Height="505" LastChildFill="False" VerticalAlignment="Top" Width="760">
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar>
+                <Button>New</Button>
+                <Button>Open</Button>
+                <Button>Save</Button>
+                <Button>Help</Button>
+            </ToolBar>
+        </ToolBarTray>
+        <ToolBarPanel DockPanel.Dock="Left">
+            <Image Name="Im1" Source="http://www.digitaltrends.com/wp-content/uploads/2010/07/starcraft2_logo.jpg"  Height="70" Width="90" ToolTip="Состояния" AllowDrop="True"/>
+            <Image Source="Images/Lines.png" Height="30" Width="30" ToolTip="Связи" AllowDrop="True"/>
+        </ToolBarPanel>
+
+    </DockPanel>
+</Window>
+
