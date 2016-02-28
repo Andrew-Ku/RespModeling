@@ -14,3 +14,16 @@ C:\Project\Tests\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.pdb
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\MyFirstWPF.exe.config
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.exe
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.pdb
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\MyFirstWPF.exe.config
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\MyFirstWPF.exe
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\MyFirstWPF.pdb
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.csprojResolveAssemblyReference.cache
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MainWindow.baml
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MainWindow.g.cs
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\App.g.cs
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF_MarkupCompile.cache
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.g.resources
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.Properties.Resources.resources
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.csproj.GenerateResource.Cache
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.exe
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.pdb
