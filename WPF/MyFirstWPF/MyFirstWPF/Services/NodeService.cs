@@ -25,15 +25,53 @@ namespace MyFirstWPF.Services
             };
         }
 
-        public static Tuple<Point,Point> ReduceArrowLine(Point point1, Point point2)
+        public static Tuple<Point, Point> ReduceArrowLine(Point point1, Point point2)
         {
             var subLenght = StartParameters.NodeRadius;
 
             var point3 = new Point();
             var newPoint1 = new Point();
             var newPoint2 = new Point();
+            double sin1; 
+            double sin2; 
+            double cos1; 
+            double cos2;
+            var arrowLineLenght = VectorLen(point1, point2);
 
-            var arrowLineLenght = Math.Sqrt(Math.Pow(point2.Y - point1.Y, 2) + Math.Pow(point2.X - point1.X, 2));
+
+            point3.X = Math.Min(point1.X, point2.X);
+
+            if (point1.X < point2.X && point1.Y > point2.Y)
+            {
+                point3.Y = point2.Y;
+
+                sin1 = VectorLen(point1, point3)/arrowLineLenght;
+                cos1 = VectorLen(point2, point3)/arrowLineLenght;
+
+            }
+
+            if (point2.X < point1.X && point1.Y < point2.Y)
+            {
+                point3.Y = point1.Y;
+            }
+
+            if (point1.X < point2.X && point1.Y < point2.Y)
+            {
+                point3.Y = point2.Y;
+            }
+
+            if (point1.X > point2.X && point1.Y > point2.Y)
+            {
+                point3.Y = point1.Y;
+            }
+
+           
+
+
+
+
+
+          
 
             newPoint1.X = subLenght * ((point2.X - point1.X) / arrowLineLenght);
             newPoint1.Y = subLenght * ((point2.Y - point1.Y) / arrowLineLenght);
@@ -52,7 +90,7 @@ namespace MyFirstWPF.Services
                 {
                     newPoint1.Y = point1.Y + subLenght;
                 }
-                
+
             }
             else if (point1.Y == point2.Y)
             {
@@ -78,17 +116,22 @@ namespace MyFirstWPF.Services
             //    newPoint1.X = point1.X - newPoint1.X;
             //    newPoint1.Y = point1.Y + newPoint1.Y;
             //}
-            
+
             else
             {
                 newPoint1.X = point1.X + newPoint1.X;
                 newPoint1.Y = point1.Y + newPoint1.Y;
             }
 
-
-
-            return new Tuple<Point, Point>(point1,point1);
+            return new Tuple<Point, Point>(point1, point1);
         }
+
+        private static double VectorLen(Point point1, Point point2)
+        {
+            return Math.Sqrt(Math.Pow(point2.Y - point1.Y, 2) + Math.Pow(point2.X - point1.X, 2));
+        }
+      
+        
 
         //public static ArrowLine ReduceArrowLine(ArrowLine arrowLine, double subLenght)
         //{
@@ -151,4 +194,8 @@ namespace MyFirstWPF.Services
         //    return arrowLine;
         //}
     }
+
+   
+
+    
 }
