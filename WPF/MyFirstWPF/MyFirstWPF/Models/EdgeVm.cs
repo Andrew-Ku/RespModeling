@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using MyFirstWPF.Consts;
+using MyFirstWPF.Services;
 
 namespace MyFirstWPF.Models
 {
@@ -16,7 +18,34 @@ namespace MyFirstWPF.Models
         public Label FromWeightLabel { get; set; }
         public Label ToWeightLabel { get; set; }
 
-        public NodeVm FromNode { get; set; }
-        public NodeVm ToNode { get; set; }
+        public NodeVm FromNodeVm { get; set; }
+        public NodeVm ToNodeVm { get; set; }
+
+
+        public void ArrowLinePositionUpdate(NodeVm nodeVm)
+        {
+
+            if (nodeVm.Equals(FromNodeVm))
+            {
+                //ArrowLine.X1 = nodeVm.Position.X;
+                //ArrowLine.Y1 = nodeVm.Position.Y;
+
+                 var pos = NodeService.ReduceArrowLine(FromNodeVm.Position, ToNodeVm.Position);
+
+                 ArrowLine.X1 =pos.X;
+                ArrowLine.Y1 = pos.Y;
+
+
+            }
+            if (nodeVm.Equals(ToNodeVm))
+            {
+                var pos = NodeService.ReduceArrowLine(ToNodeVm.Position,FromNodeVm.Position);
+
+                ArrowLine.X2 = pos.X;
+                ArrowLine.Y2 = pos.Y;
+
+                 //var pos = NodeService.ReduceArrowLine(FromNodeVm.Position, ToNodeVm.Position, true);
+            }
+        }
     }
 }

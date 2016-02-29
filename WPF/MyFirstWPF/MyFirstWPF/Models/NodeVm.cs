@@ -9,7 +9,7 @@ using System.Windows.Shapes;
 
 namespace MyFirstWPF.Models
 {
-    public class NodeVm
+    public class NodeVm : DependencyObject
     {
         public static int NodeVmCount;
 
@@ -17,10 +17,32 @@ namespace MyFirstWPF.Models
         {
             Id = NodeVmCount;
             NodeVmCount++;
+            EdgeVmList = new List<EdgeVm>();
         }
         public int Id { get; set; }
         public TextBlock TextBlock { get; set; }
         public Node Node { get; set; }
-        public Point Position { get; set; }
+
+        public static readonly DependencyProperty PositionProperty =
+         DependencyProperty.Register("Position",
+             typeof(Point), typeof(NodeVm),
+             new FrameworkPropertyMetadata(new Point(),
+                     FrameworkPropertyMetadataOptions.AffectsMeasure));
+
+        public Point Position
+        {
+            set
+            {
+                SetValue(PositionProperty, value);
+                foreach (var edgeVm in EdgeVmList)
+                {
+                    edgeVm.ArrowLinePositionUpdate(this);
+                }
+                
+            }
+            get { return (Point)GetValue(PositionProperty); }
+        }
+
+        public List<EdgeVm> EdgeVmList { get; set; }
     }
 }

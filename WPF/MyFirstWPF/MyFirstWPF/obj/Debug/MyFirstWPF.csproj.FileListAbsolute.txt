@@ -27,3 +27,13 @@ F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\My
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.csproj.GenerateResource.Cache
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.exe
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.pdb
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\MyFirstWPF.exe
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\MyFirstWPF.pdb
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.csprojResolveAssemblyReference.cache
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MainWindow.baml
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MainWindow.g.cs
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\App.g.cs
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF_MarkupCompile.cache
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.g.resources
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.Properties.Resources.resources
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.csproj.GenerateResource.Cache

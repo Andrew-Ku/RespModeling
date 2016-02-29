@@ -26,6 +26,7 @@ namespace MyFirstWPF
     public partial class MainWindow : Window
     {
         private readonly NodeService _nodeService;
+        private readonly MathService _mathService;
 
         public List<NodeVm> NodeVmList;
         public List<EdgeVm> EdgeVmList;
@@ -34,17 +35,18 @@ namespace MyFirstWPF
         public NodeVm StartNodeVmEdge;
         public bool MoveFlag;
         public Point CurrPosition;
-       
+        public NodeVm MoveNodeVm;
+
         public MainWindow()
         {
             _nodeService = new NodeService();
+            _mathService = new MathService();
 
             NodeVmList = new List<NodeVm>();
             NodeList = new List<Node>();
             NodeRadius = StartParameters.NodeRadius;
             EdgeVmList = new List<EdgeVm>();
             MoveFlag = false;
-
 
             InitializeComponent();
         }
@@ -91,56 +93,38 @@ namespace MyFirstWPF
                 WorkPlaceCanvas.Children.Add(nodeVm.TextBlock);
             }
             #endregion
+            e.Handled = true;
 
-            #region
-            #endregion
-
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            foreach (var p in NodeVmList.Select(item => item.Position))
-            {
-                WorkPlaceCanvas.Children.Add(new ArrowLine()
-                {
-                    X1 = p.X,
-                    Y1 = p.Y,
-                    X2 = 100,
-                    Y2 = 100,
-                    Stroke = Brushes.Black,
-                    StrokeThickness = 2
-                });
-            }
         }
 
         private void NewButton_OnClick(object sender, RoutedEventArgs e)
         {
             NodeList.ClearEx();
             NodeVmList.ClearEx();
-
+            LogTextBox.Clear();
+            EdgeVmList.Clear();
             WorkPlaceCanvas.Children.Clear();
 
         }
 
         private void WorkPlaceCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-         
+
         }
 
         private void TextBlock_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
 
-            AddEdgeClear();
+            SetNormalNodeVmColor(ref StartNodeVmEdge);
 
             #region Создание связи
 
             if (StateCheckBox.IsChecked.GetValueOrDefault())
             {
                 var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
-                if (nodeVm == null || StartNodeVmEdge == nodeVm)
+                if (nodeVm == null || Equals(StartNodeVmEdge, nodeVm))
                 {
-                    AddEdgeClear();
-                    StartNodeVmEdge = null;
+                    SetNormalNodeVmColor(ref StartNodeVmEdge, true);
                     return;
                 }
                 else if (StartNodeVmEdge == null)
@@ -150,6 +134,31 @@ namespace MyFirstWPF
                 }
                 else
                 {
+                    // Есть ли такая связь
+                    if (EdgeVmList.Any(ed => ed.FromNodeVm.Equals(StartNodeVmEdge) && ed.ToNodeVm.Equals(nodeVm)))
+                    {
+                        SetNormalNodeVmColor(ref StartNodeVmEdge);
+                        return;
+                    }
+                    // Есть ли обратная связь
+                    if (EdgeVmList.Any(ed => ed.FromNodeVm.Equals(nodeVm) && ed.ToNodeVm.Equals(StartNodeVmEdge)))
+                    {
+
+                        EdgeVmList.Single(ed => ed.FromNodeVm.Equals(nodeVm) && ed.ToNodeVm.Equals(StartNodeVmEdge))
+                            .ArrowLine.ArrowEnds = ArrowEnds.Both;
+
+
+                        StartNodeVmEdge.Node.NodeRelations.Add(new NodeRelation()
+                        {
+                            NodeId = nodeVm.Node.Id,
+                            Weight = 1
+                        });
+
+
+                        SetNormalNodeVmColor(ref StartNodeVmEdge);
+                        return;
+                    }
+
                     StartNodeVmEdge.Node.NodeRelations.Add(new NodeRelation()
                     {
                         NodeId = nodeVm.Node.Id,
@@ -158,8 +167,8 @@ namespace MyFirstWPF
 
                     var edgeVm = new EdgeVm()
                     {
-                        FromNode = StartNodeVmEdge,
-                        ToNode = nodeVm,
+                        FromNodeVm = StartNodeVmEdge,
+                        ToNodeVm = nodeVm,
                         FromWeightLabel = new Label()
                         {
                             Content = StartNodeVmEdge.Node.Id,
@@ -183,12 +192,14 @@ namespace MyFirstWPF
                         }
                     };
 
+                    StartNodeVmEdge.EdgeVmList.Add(edgeVm);
+                    nodeVm.EdgeVmList.Add(edgeVm);
+
                     EdgeVmList.Add(edgeVm);
 
                     WorkPlaceCanvas.Children.Add(edgeVm.ArrowLine);
                     WorkPlaceCanvas.Children.Add(edgeVm.FromWeightLabel);
-                    AddEdgeClear();
-                    StartNodeVmEdge = null;
+                    SetNormalNodeVmColor(ref StartNodeVmEdge, true);
                 }
 
             }
@@ -199,16 +210,34 @@ namespace MyFirstWPF
 
         private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            CurrPosition = e.GetPosition(WorkPlaceCanvas);
-            MoveFlag = true;
-          
+            SetNormalNodeVmColor(ref StartNodeVmEdge, true);
+
+            if (Keyboard.IsKeyDown(Key.D))
+            {
+                var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
+                DeleteNode(nodeVm);
+            }
+            else
+            {
+                CurrPosition = e.GetPosition(WorkPlaceCanvas);
+
+                MoveFlag = true;
+                MoveNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
+                MoveNodeVm.TextBlock.Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, Brushes.Moccasin, Brushes.Red));
+                Mouse.Capture(MoveNodeVm.TextBlock);
+                MoveFlagLabel.Content = MoveFlag.ToString();
+            }
+
             e.Handled = true;
         }
         private void TextBlock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            CurrPosition = e.GetPosition(WorkPlaceCanvas);
+            if (MoveNodeVm == null) return;
+            Mouse.Capture(null);
             MoveFlag = false;
-
+            MoveFlagLabel.Content = MoveFlag.ToString();
+            MoveNodeVm.TextBlock.Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, Brushes.Moccasin, Brushes.Tan));
+            MoveNodeVm = null;
             e.Handled = true;
         }
 
@@ -216,21 +245,68 @@ namespace MyFirstWPF
         {
             if (MoveFlag)
             {
-                var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
-
-                nodeVm.TextBlock.SetValue(Canvas.LeftProperty, e.GetPosition(WorkPlaceCanvas).X-CurrPosition.X);
-                nodeVm.TextBlock.SetValue(Canvas.TopProperty, e.GetPosition(WorkPlaceCanvas).Y - CurrPosition.Y);
+                var cursorPosition = e.GetPosition(WorkPlaceCanvas);
+                MoveNodeVm.TextBlock.Margin = new Thickness(cursorPosition.X - NodeRadius, cursorPosition.Y - NodeRadius, 0, 0);
+                MoveNodeVm.Position = new Point(cursorPosition.X, cursorPosition.Y);
             }
 
             e.Handled = true;
         }
 
-        private void AddEdgeClear()
+        /// <summary>
+        /// Установка обыного цвета вершины
+        /// </summary>
+        private void SetNormalNodeVmColor(ref NodeVm nodeVm, bool nullFlag = false)
         {
-            if (StartNodeVmEdge == null) return;
-            StartNodeVmEdge.TextBlock.Background =
-                    new VisualBrush(_nodeService.GetEllipse(NodeRadius, Brushes.Moccasin, Brushes.Tan));
+            if (nodeVm == null) return;
+            nodeVm.TextBlock.Background =
+                    new VisualBrush(_nodeService.GetEllipse(NodeRadius, NodeColors.NormalBackground, NodeColors.NormalBorder));
 
+            if (nullFlag)
+                nodeVm = null;
+        }
+
+
+        /// <summary>
+        /// Удаление всех данных об узле
+        /// </summary>
+        /// <param name="nodeVm"></param>
+        private void DeleteNode(NodeVm nodeVm)
+        {
+            // Удаляем связи с данным узлом во всех узлах
+            foreach (var node in NodeList)
+            {
+                node.NodeRelations.RemoveAll(n => n.NodeId == nodeVm.Node.Id);
+            }
+
+            // Поиск ребер у которого на одном из концов есть удалемый узел
+            var deleteEdges = EdgeVmList.Where(e => e.FromNodeVm.Equals(nodeVm) || e.ToNodeVm.Equals(nodeVm)).ToList();
+            if (deleteEdges.Any())
+            {
+                // Удаляем найденные ребра из рабочей области
+                foreach (var edge in deleteEdges.ToList())
+                {
+                    WorkPlaceCanvas.Children.Remove(edge.ArrowLine);
+                    WorkPlaceCanvas.Children.Remove(edge.FromWeightLabel);
+                    WorkPlaceCanvas.Children.Remove(edge.ToWeightLabel);
+                }
+            }
+
+            // Удаляем ребра из списка ребер узлов
+            foreach (var vm in NodeVmList.Where(c => c.EdgeVmList.Any(deleteEdges.Contains)))
+            {
+                vm.EdgeVmList.RemoveAll(deleteEdges.Contains);
+            }
+
+            // Удаляем узел из рабочей области
+            WorkPlaceCanvas.Children.Remove(nodeVm.TextBlock);
+
+            // Удаляем элемнты из списков
+            EdgeVmList.RemoveAll(deleteEdges.Contains);
+            NodeList.Remove(nodeVm.Node);
+            NodeVmList.Remove(nodeVm);
+
+            SetNormalNodeVmColor(ref StartNodeVmEdge, true);
         }
     }
 

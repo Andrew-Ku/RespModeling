@@ -12,18 +12,26 @@
                     <Button>Help</Button>
                 </ToolBar>
             </ToolBarTray>
-            <Button Name="button2" DockPanel.Dock="Bottom">I am the status bar</Button>
+            <Button Name="button4" DockPanel.Dock="Bottom">I am the right toolbox</Button>
             <StackPanel DockPanel.Dock="Left" Orientation="Vertical" MinWidth="140">
                 <Button Content="Button" Width="75"/>
                 <Label Content="Label"/>
-                <CheckBox Name="StateCheckBox" Content="Состояния"/>
+                <CheckBox Name="StateCheckBox" Content="Состояния" IsChecked="True"/>
                 <CheckBox Name="DugiCheckBox"  Content="Дуги"/>
                 <CheckBox Name="TestCheckBox"  Content="CheckBox"/>
             </StackPanel>
-            <Button Name="button4" DockPanel.Dock="Right">I am the right toolbox</Button>
-            <Canvas Name="WorkPlaceCanvas" Background="#FFC3E6C1" MouseLeftButtonDown="WorkPlaceCanvas_MouseLeftButtonDown" MouseRightButtonDown="WorkPlaceCanvas_MouseRightButtonDown">
-                <Label Canvas.Left="46" Canvas.Top="18" Name="label1">Label</Label>
-               
+            <StackPanel DockPanel.Dock="Right" Orientation="Vertical" MinWidth="140" HorizontalAlignment="Right">
+                <TextBox Name="LogTextBox" Height="200" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="200"  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.CanContentScroll="True">
+
+                </TextBox>
+               <Label Name="MoveFlagLabel" Content="False" MinWidth="30" HorizontalContentAlignment="Center"/>
+                <Label Name="MoveXPosLabel" Content="X" MinWidth="30" HorizontalContentAlignment="Center"/>
+                <Label Name="MoveYPosLabel" Content="Y" MinWidth="30" HorizontalContentAlignment="Center"/>
+            </StackPanel>
+            <Canvas Name="WorkPlaceCanvas" Background="#FFC3E6C1" MouseLeftButtonDown="WorkPlaceCanvas_MouseLeftButtonDown" MouseRightButtonDown="WorkPlaceCanvas_MouseRightButtonDown">           
+
             </Canvas>
         </DockPanel>
     </Grid>
