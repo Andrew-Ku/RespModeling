@@ -30,21 +30,25 @@ namespace MyFirstWPF.Models
                 //ArrowLine.X1 = nodeVm.Position.X;
                 //ArrowLine.Y1 = nodeVm.Position.Y;
 
-                 var pos = NodeService.ReduceArrowLine(FromNodeVm.Position, ToNodeVm.Position);
+                var pos = NodeService.ReduceArrowLine(FromNodeVm.Position, ToNodeVm.Position);
 
-                 ArrowLine.X1 =pos.X;
-                ArrowLine.Y1 = pos.Y;
+                ArrowLine.X1 = pos.Item1.X;
+                ArrowLine.Y1 = pos.Item1.Y;
+
+                ArrowLine.X2 = pos.Item2.X;
+                ArrowLine.Y2 = pos.Item2.Y;
 
 
             }
             if (nodeVm.Equals(ToNodeVm))
             {
-                var pos = NodeService.ReduceArrowLine(ToNodeVm.Position,FromNodeVm.Position);
+                var pos = NodeService.ReduceArrowLine(ToNodeVm.Position, FromNodeVm.Position);
 
-                ArrowLine.X2 = pos.X;
-                ArrowLine.Y2 = pos.Y;
+                ArrowLine.X1 = pos.Item2.X;
+                ArrowLine.Y1 = pos.Item2.Y;
 
-                 //var pos = NodeService.ReduceArrowLine(FromNodeVm.Position, ToNodeVm.Position, true);
+                ArrowLine.X2 = pos.Item1.X;
+                ArrowLine.Y2 = pos.Item1.Y;
             }
         }
     }
