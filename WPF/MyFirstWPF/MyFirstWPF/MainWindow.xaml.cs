@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -36,6 +37,7 @@ namespace MyFirstWPF
         public bool MoveFlag;
         public Point CurrPosition;
         public NodeVm MoveNodeVm;
+        public NodeVm EditNodeVm;
 
         public MainWindow()
         {
@@ -47,6 +49,7 @@ namespace MyFirstWPF
             NodeRadius = StartParameters.NodeRadius;
             EdgeVmList = new List<EdgeVm>();
             MoveFlag = false;
+           
 
             InitializeComponent();
         }
@@ -55,13 +58,14 @@ namespace MyFirstWPF
         {
             #region Добавление нового узла
 
-            if (StateCheckBox.IsChecked.GetValueOrDefault())
+            if (CreateModeRadioButton.IsChecked.GetValueOrDefault())
             {
                 var cursorPosition = e.GetPosition(WorkPlaceCanvas);
 
                 if (NodeVmList.Any(n => Math.Abs(n.Position.X - cursorPosition.X) < NodeRadius * 2 && Math.Abs(n.Position.Y - cursorPosition.Y) < NodeRadius * 2)) return;
 
                 var paddingLeft = Node.NodeCount > 9 ? 12 : 17;
+               
                 var textBlock = new TextBlock()
                 {
                     Text = Node.NodeCount.ToString(),
@@ -69,17 +73,19 @@ namespace MyFirstWPF
                     Width = NodeRadius * 2.0,
                     Padding = new Thickness(paddingLeft, NodeRadius / 2.0, 0, 0),
                     Margin = new Thickness(cursorPosition.X - NodeRadius, cursorPosition.Y - NodeRadius, 0.0, 0.0),
-                    Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, Brushes.Moccasin, Brushes.Tan))
+                    Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, NodeColors.NormalBackground, NodeColors.NormalBorder))
                 };
 
                 textBlock.MouseRightButtonDown += TextBlock_MouseRightButtonDown;
                 textBlock.MouseLeftButtonDown += TextBlock_MouseLeftButtonDown;
                 textBlock.MouseLeftButtonUp += TextBlock_MouseLeftButtonUp;
                 textBlock.MouseMove += TextBlock_MouseMove;
-
-
-
+                
                 var node = new Node();
+                if (node.IsStartNode)
+                {
+                    textBlock.Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, NodeColors.StartNodeBackground, NodeColors.NormalBorder));
+                }
                 var nodeVm = new NodeVm()
                 {
                     TextBlock = textBlock,
@@ -104,7 +110,6 @@ namespace MyFirstWPF
             LogTextBox.Clear();
             EdgeVmList.Clear();
             WorkPlaceCanvas.Children.Clear();
-
         }
 
         private void WorkPlaceCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
@@ -119,7 +124,7 @@ namespace MyFirstWPF
 
             #region Создание связи
 
-            if (StateCheckBox.IsChecked.GetValueOrDefault())
+            if (CreateModeRadioButton.IsChecked.GetValueOrDefault())
             {
                 var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
                 if (nodeVm == null || Equals(StartNodeVmEdge, nodeVm))
@@ -130,7 +135,7 @@ namespace MyFirstWPF
                 else if (StartNodeVmEdge == null)
                 {
                     StartNodeVmEdge = nodeVm;
-                    StartNodeVmEdge.TextBlock.Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, Brushes.Moccasin, Brushes.Red));
+                    StartNodeVmEdge.TextBlock.Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, StartNodeVmEdge.Node.IsStartNode ? NodeColors.StartNodeBackground : NodeColors.NormalBackground, NodeColors.EdgeCreateBorder));
                 }
                 else
                 {
@@ -165,6 +170,8 @@ namespace MyFirstWPF
                         Weight = 1
                     });
 
+                    var edgePos = NodeService.ReduceArrowLine(StartNodeVmEdge.Position, nodeVm.Position);
+
                     var edgeVm = new EdgeVm()
                     {
                         FromNodeVm = StartNodeVmEdge,
@@ -183,10 +190,11 @@ namespace MyFirstWPF
                         },
                         ArrowLine = new ArrowLine()
                         {
-                            X1 = StartNodeVmEdge.Position.X,
-                            Y1 = StartNodeVmEdge.Position.Y,
-                            X2 = nodeVm.Position.X,
-                            Y2 = nodeVm.Position.Y,
+                            X1 = edgePos.Item1.X,
+                            Y1 = edgePos.Item1.Y,
+                            X2 = edgePos.Item2.X,
+                            Y2 = edgePos.Item2.Y,
+
                             Stroke = Brushes.Black,
                             StrokeThickness = 2
                         }
@@ -198,7 +206,7 @@ namespace MyFirstWPF
                     EdgeVmList.Add(edgeVm);
 
                     WorkPlaceCanvas.Children.Add(edgeVm.ArrowLine);
-                    WorkPlaceCanvas.Children.Add(edgeVm.FromWeightLabel);
+                    //WorkPlaceCanvas.Children.Add(edgeVm.FromWeightLabel);
                     SetNormalNodeVmColor(ref StartNodeVmEdge, true);
                 }
 
@@ -211,6 +219,7 @@ namespace MyFirstWPF
         private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             SetNormalNodeVmColor(ref StartNodeVmEdge, true);
+            SetNormalNodeVmColor(ref EditNodeVm);
 
             if (Keyboard.IsKeyDown(Key.D))
             {
@@ -219,13 +228,34 @@ namespace MyFirstWPF
             }
             else
             {
-                CurrPosition = e.GetPosition(WorkPlaceCanvas);
+                if (CreateModeRadioButton.IsChecked == true)
+                {
+                    CurrPosition = e.GetPosition(WorkPlaceCanvas);
+                    MoveFlag = true;
+                    MoveNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
+                    MoveNodeVm.TextBlock.Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, MoveNodeVm.Node.IsStartNode ? NodeColors.StartNodeBackground : NodeColors.NormalBackground, NodeColors.MoveNodeBorder));
+                    Mouse.Capture(MoveNodeVm.TextBlock);
+                    MoveFlagLabel.Content = MoveFlag.ToString();
+                }
+                if (EditModeRadioButton.IsChecked == true)
+                {
+                    EditNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
+                    EditNodeVm.TextBlock.Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, EditNodeVm.Node.IsStartNode ? NodeColors.StartNodeBackground : NodeColors.NormalBackground, NodeColors.EditNodeBorder));
+                    NodeNumberTextBox.Text = EditNodeVm.Node.Id.ToString();
+                    StartNodeCheckBox.IsChecked = EditNodeVm.Node.IsStartNode;
+                    RejectionNodeCheckBox.IsChecked = EditNodeVm.Node.IsRejectionNode;
 
-                MoveFlag = true;
-                MoveNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
-                MoveNodeVm.TextBlock.Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, Brushes.Moccasin, Brushes.Red));
-                Mouse.Capture(MoveNodeVm.TextBlock);
-                MoveFlagLabel.Content = MoveFlag.ToString();
+                    if (EditNodeVm.Node.IsStartNode)
+                    {
+                        StartNodeCheckBox.IsEnabled = false;
+                        RejectionNodeCheckBox.IsEnabled = false;
+                    }
+                    else
+                    {
+                        StartNodeCheckBox.IsEnabled = true;
+                        RejectionNodeCheckBox.IsEnabled = true;
+                    }
+                }
             }
 
             e.Handled = true;
@@ -236,13 +266,16 @@ namespace MyFirstWPF
             Mouse.Capture(null);
             MoveFlag = false;
             MoveFlagLabel.Content = MoveFlag.ToString();
-            MoveNodeVm.TextBlock.Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, Brushes.Moccasin, Brushes.Tan));
+            MoveNodeVm.TextBlock.Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, MoveNodeVm.Node.IsStartNode ? NodeColors.StartNodeBackground : NodeColors.NormalBackground, Brushes.Tan));
             MoveNodeVm = null;
             e.Handled = true;
         }
 
         private void TextBlock_MouseMove(object sender, MouseEventArgs e)
         {
+            MoveXPosLabel.Content = e.GetPosition(WorkPlaceCanvas).X;
+            MoveYPosLabel.Content = e.GetPosition(WorkPlaceCanvas).Y;
+
             if (MoveFlag)
             {
                 var cursorPosition = e.GetPosition(WorkPlaceCanvas);
@@ -260,7 +293,7 @@ namespace MyFirstWPF
         {
             if (nodeVm == null) return;
             nodeVm.TextBlock.Background =
-                    new VisualBrush(_nodeService.GetEllipse(NodeRadius, NodeColors.NormalBackground, NodeColors.NormalBorder));
+                new VisualBrush(_nodeService.GetEllipse(NodeRadius, nodeVm.Node.IsStartNode ? NodeColors.StartNodeBackground : NodeColors.NormalBackground, NodeColors.NormalBorder));
 
             if (nullFlag)
                 nodeVm = null;
@@ -307,6 +340,77 @@ namespace MyFirstWPF
             NodeVmList.Remove(nodeVm);
 
             SetNormalNodeVmColor(ref StartNodeVmEdge, true);
+        }
+
+        private void WorkPlaceCanvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            MoveXPosLabel.Content = e.GetPosition(WorkPlaceCanvas).X;
+            MoveYPosLabel.Content = e.GetPosition(WorkPlaceCanvas).Y;
+        }
+
+        private void NodeNumberValidation(object sender, TextCompositionEventArgs e)
+        {
+            var regex = new Regex("[^0-9]+");
+            e.Handled = regex.IsMatch(e.Text);
+        }
+
+        private void ModeRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            if (EditNodeGrid == null) return;
+            EditNodeGrid.Visibility = e.Source.Equals(EditModeRadioButton) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void SaveEditNodeButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (EditNodeVm == null) return;
+           
+            if (NodeNumberTextBox.Text.Length == 2 && NodeNumberTextBox.Text.StartsWith("0"))
+            {
+                 NodeNumberTextBox.Text = NodeNumberTextBox.Text.Substring(1);
+            }
+             var number = int.Parse(NodeNumberTextBox.Text);
+
+            if (NodeList.Any(n => n.Id == number) && number != EditNodeVm.Id)
+            {
+                MessageBox.Show("Узел с указанным номером уже существует", "Ошибка редактирования", MessageBoxButton.OK);
+                return;
+            }
+            if (RejectionNodeCheckBox.IsChecked == true && StartNodeCheckBox.IsChecked == true)
+            {
+                MessageBox.Show("Узел не может быть стартовым и отказным одновременно", "Ошибка редактирования", MessageBoxButton.OK);
+                return;
+            }
+
+            if (StartNodeCheckBox.IsChecked == true)
+            {
+                var oldStartNode = NodeList.Single(n => n.IsStartNode);
+                oldStartNode.IsStartNode = false;
+                var oldStartNodeVm = NodeVmList.Single(nv => nv.Node.Equals(oldStartNode));
+                oldStartNodeVm.TextBlock.Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, NodeColors.NormalBackground, NodeColors.NormalBorder));
+           
+                var newStartNodeVm = NodeVmList.Single(nv => nv.Equals(EditNodeVm));
+                newStartNodeVm.TextBlock.Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, NodeColors.StartNodeBackground, NodeColors.NormalBorder));
+            }
+
+            ChangeNodeId(EditNodeVm.Id, number);
+            EditNodeVm.Node.IsStartNode = StartNodeCheckBox.IsChecked.GetValueOrDefault();
+            EditNodeVm.Node.IsRejectionNode = RejectionNodeCheckBox.IsChecked.GetValueOrDefault();
+        }
+
+
+        private void ChangeNodeId(int oldId, int newId)
+        {
+            var node = NodeList.Single(n => n.Id == oldId);
+            var nodeVm = NodeVmList.Single(nv => nv.Node.Equals(node));
+            nodeVm.Id = newId;
+            nodeVm.TextBlock.Text = newId.ToString();
+
+            EditNodeVm.Node.Id = newId;
+
+            foreach (var relation in NodeList.Select(nodeL => nodeL.NodeRelations.Where(n => n.NodeId == oldId).ToList()).SelectMany(relations => relations))
+            {
+                relation.NodeId = newId;
+            }
         }
     }
 

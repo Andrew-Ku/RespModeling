@@ -12,27 +12,56 @@
                     <Button>Help</Button>
                 </ToolBar>
             </ToolBarTray>
-            <Button Name="button4" DockPanel.Dock="Bottom">I am the right toolbox</Button>
-            <StackPanel DockPanel.Dock="Left" Orientation="Vertical" MinWidth="140">
-                <Button Content="Button" Width="75"/>
-                <Label Content="Label"/>
-                <CheckBox Name="StateCheckBox" Content="Состояния" IsChecked="True"/>
-                <CheckBox Name="DugiCheckBox"  Content="Дуги"/>
-                <CheckBox Name="TestCheckBox"  Content="CheckBox"/>
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" MinWidth="140" Background="Beige">
+                <Label Name="MoveXPosLabel" Content="X" MinWidth="30" HorizontalContentAlignment="Right"/>
+                <Label Name="MoveYPosLabel" Content="Y" MinWidth="30" HorizontalContentAlignment="Right"/>
             </StackPanel>
-            <StackPanel DockPanel.Dock="Right" Orientation="Vertical" MinWidth="140" HorizontalAlignment="Right">
-                <TextBox Name="LogTextBox" Height="200" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="200"  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+            <StackPanel DockPanel.Dock="Left" Orientation="Vertical" MinWidth="140" Background="WhiteSmoke" >
+                <Label Content="Режимы:"/>
+                <RadioButton Name="CreateModeRadioButton" Content="Режим создания" IsChecked="True" Checked="ModeRadioButton_Checked"/>
+                <RadioButton Name="EditModeRadioButton"  Content="Редактирование" Checked="ModeRadioButton_Checked"/>
+                <Grid Name="EditNodeGrid" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition ></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition ></ColumnDefinition>
+                        <ColumnDefinition ></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Content="Номер узла:" HorizontalContentAlignment="Right"></Label>
+                    <TextBox Grid.Row="0" Name="NodeNumberTextBox" PreviewTextInput="NodeNumberValidation" Height="22" 
+                             VerticalAlignment="Bottom"
+                             MaxLength="2"
+                             Margin="5,1,5,1"
+                             Grid.Column="1"/>
+                    <CheckBox   Grid.Column="0" Grid.Row="1" Name="StartNodeCheckBox"  Content="Стартовый узел"/>
+
+                    <CheckBox Grid.Row="2" Name="RejectionNodeCheckBox" Grid.Column="0" Content="Отказной узел"/>
+                    <Button Grid.Row="3" Grid.Column="0" Margin="5,1,2,1" Click="SaveEditNodeButton_OnClick">Сохранить</Button>
+                    <Button Grid.Row="3" Grid.Column="1" Margin="2,1,5,1">Вернуть</Button>
+
+
+                </Grid>
+
+                <RadioButton Name="EditModeRadioButton1"  Content="Редактирование" Checked="ModeRadioButton_Checked"/>
+            </StackPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Vertical" MinWidth="140" Background="WhiteSmoke" HorizontalAlignment="Right">
+                <TextBox Name="LogTextBox" Height="50" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="200"  ScrollViewer.HorizontalScrollBarVisibility="Auto"
                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                      ScrollViewer.CanContentScroll="True">
-
                 </TextBox>
-               <Label Name="MoveFlagLabel" Content="False" MinWidth="30" HorizontalContentAlignment="Center"/>
-                <Label Name="MoveXPosLabel" Content="X" MinWidth="30" HorizontalContentAlignment="Center"/>
-                <Label Name="MoveYPosLabel" Content="Y" MinWidth="30" HorizontalContentAlignment="Center"/>
+                <Label Name="MoveFlagLabel" Content="False" MinWidth="30" HorizontalContentAlignment="Center"/>
+                
             </StackPanel>
-            <Canvas Name="WorkPlaceCanvas" Background="#FFC3E6C1" MouseLeftButtonDown="WorkPlaceCanvas_MouseLeftButtonDown" MouseRightButtonDown="WorkPlaceCanvas_MouseRightButtonDown">           
+            <Border Width="auto" Height="auto" BorderBrush="DarkSlateGray" BorderThickness="1">
+                <Canvas Name="WorkPlaceCanvas" Background="Azure" MouseLeftButtonDown="WorkPlaceCanvas_MouseLeftButtonDown" MouseRightButtonDown="WorkPlaceCanvas_MouseRightButtonDown" MouseMove="WorkPlaceCanvas_MouseMove">
 
-            </Canvas>
+                </Canvas>
+            </Border>
         </DockPanel>
     </Grid>
 </Window>

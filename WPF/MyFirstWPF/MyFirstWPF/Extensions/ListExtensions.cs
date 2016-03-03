@@ -17,6 +17,7 @@ namespace MyFirstWPF.Extensions
         public static void ClearEx(this List<Node> list)
         {
             Node.NodeCount = 0;
+            Node.IsSetupStartNode = false;
             list.Clear();
         }
     }
