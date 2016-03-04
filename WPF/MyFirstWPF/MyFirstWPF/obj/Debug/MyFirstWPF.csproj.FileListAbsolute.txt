@@ -38,3 +38,7 @@ C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.g.resources
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.Properties.Resources.resources
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.csproj.GenerateResource.Cache
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\alglibnet2.dll
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\Newtonsoft.Json.dll
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\Newtonsoft.Json.xml
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\AutoMapper.dll
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\AutoMapper.xml

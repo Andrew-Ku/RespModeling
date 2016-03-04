@@ -12,6 +12,8 @@ namespace MyFirstWPF.Consts
         public static Brush NormalBackground = Brushes.Moccasin;
 
         public static Brush StartNodeBackground = Brushes.Yellow;
+
+        public static Brush RejectionNodeBackground = Brushes.Salmon;
       
         public static Brush NormalBorder = Brushes.Tan;
        

@@ -13,7 +13,7 @@ namespace MyFirstWPF.Services
 {
     public class NodeService
     {
-        public Ellipse GetEllipse(double radius, Brush ellipseColor, Brush borderColor)
+        public static Ellipse GetEllipse(double radius, Brush ellipseColor, Brush borderColor)
         {
             return new Ellipse()
             {
@@ -27,8 +27,6 @@ namespace MyFirstWPF.Services
 
         public static Tuple<Point, Point> ReduceArrowLine(Point point1, Point point2)
         {
-            var subLenght = StartParameters.NodeRadius;
-
             var point3 = new Point();
             var newPoint1 = new Point();
             var newPoint2 =new Point();
@@ -167,13 +165,29 @@ namespace MyFirstWPF.Services
             return r;
         }
 
-        private static Point GetLabelPosition(Point point1, Point point2)
+        /// <summary>
+        /// Установка цета узла
+        /// </summary>
+        public static void SetNodeVmColor(ref NodeVm nodeVm, bool nullFlag = false, Brush border = null)
         {
-            var medPoint = new Point((point1.X + point2.X)/2, (point1.Y + point2.Y)/2);
+            if (nodeVm == null) return;
 
+            nodeVm.TextBlock.Background = new VisualBrush(GetEllipse(StartParameters.NodeRadius, NodeColors.NormalBackground, border ??  NodeColors.NormalBorder));
+            
+            if (nodeVm.Node.IsStartNode)
+            {
+                nodeVm.TextBlock.Background =
+               new VisualBrush(GetEllipse(StartParameters.NodeRadius, NodeColors.StartNodeBackground, border ?? NodeColors.NormalBorder));
+            }
 
+            if (nodeVm.Node.IsRejectionNode)
+            {
+                nodeVm.TextBlock.Background =
+               new VisualBrush(GetEllipse(StartParameters.NodeRadius, NodeColors.RejectionNodeBackground, border ?? NodeColors.NormalBorder));
+            }
 
-            return new Point();
+            if (nullFlag)
+                nodeVm = null;
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
+using Newtonsoft.Json;
 
 namespace MyFirstWPF.Models
 {
@@ -16,12 +17,19 @@ namespace MyFirstWPF.Models
         public NodeVm()
         {
             Id = NodeVmCount;
-            NodeVmCount++;
+           // NodeVmCount++;
             EdgeVmList = new List<EdgeVm>();
         }
         public int Id { get; set; }
+
+        [JsonIgnore] 
         public TextBlock TextBlock { get; set; }
+
+
         public Node Node { get; set; }
+
+        public TextBlockSave TextBlockSave { get; set; }
+
 
         public static readonly DependencyProperty PositionProperty =
          DependencyProperty.Register("Position",
