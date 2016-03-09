@@ -48,6 +48,36 @@
 
                 </Grid>
 
+                <Grid Name="EditEdgeGrid" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition ></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                       
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition ></ColumnDefinition>
+                        <ColumnDefinition ></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+
+                    <Label   Grid.Row="0" Grid.Column="0" Content="Ребро:" HorizontalContentAlignment="Right"></Label>
+                    <Label Name="EdgeEditLabel1" Grid.Row="1" Grid.Column="0"  HorizontalContentAlignment="Right"></Label>
+                    <TextBox Grid.Row="1" Grid.Column="1"  Name="EdgeLambdaTextBox1" PreviewKeyDown="EdgeLambdaValidation" Height="22" 
+                             VerticalAlignment="Bottom"
+                             Margin="5,1,5,1"/>
+                    <Label Name="EdgeEditLabel2" Grid.Row="2" Grid.Column="0"  HorizontalContentAlignment="Right"></Label>
+                    <TextBox Grid.Row="2" Grid.Column="1"  Name="EdgeLambdaTextBox2" PreviewKeyDown="EdgeLambdaValidation" Height="22" 
+                             VerticalAlignment="Bottom"
+                            
+                             Margin="5,1,5,1"/>
+                   
+                    <Button Name="SaveEditEdgeButton" Grid.Row="3" Grid.Column="0" Margin="5,1,2,1" Click="SaveEditEdgeButton_OnClick">Сохранить</Button>
+                    
+
+
+                </Grid>
+
                 <RadioButton Name="EditModeRadioButton1"  Content="Редактирование" Checked="ModeRadioButton_Checked"/>
             </StackPanel>
             <StackPanel Name="RightStackPanel"  DockPanel.Dock="Right" Orientation="Vertical" MinWidth="140" Background="WhiteSmoke" HorizontalAlignment="Right">

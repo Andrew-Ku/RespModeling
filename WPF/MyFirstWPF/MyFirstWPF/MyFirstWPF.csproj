@@ -63,17 +63,22 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Consts\ArrowEnds.cs" />
+    <Compile Include="Consts\Edge.cs" />
     <Compile Include="Consts\NodeColors.cs" />
     <Compile Include="Consts\StartParameters.cs" />
     <Compile Include="Consts\WorkMode.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
+    <Compile Include="Infrastructure\AutoMapperBootstrapper.cs" />
+    <Compile Include="Infrastructure\ForGetChar.cs" />
     <Compile Include="Models\ArrowLine.cs" />
-    <Compile Include="Models\ArrowLineSave.cs" />
+    <Compile Include="Models\FileSaveModels\EdgeSave.cs" />
     <Compile Include="Models\EdgeVm.cs" />
     <Compile Include="Models\Node.cs" />
     <Compile Include="Models\NodeRelation.cs" />
     <Compile Include="Models\NodeVm.cs" />
-    <Compile Include="Models\TextBlockSave.cs" />
+    <Compile Include="Models\FileSaveModels\ModelStateSave.cs" />
+    <Compile Include="Models\FileSaveModels\NodeSave.cs" />
+    <Compile Include="Profile\StateSaveProfile.cs" />
     <Compile Include="Profile\NodeProfile.cs" />
     <Compile Include="Services\MathService.cs" />
     <Compile Include="Services\NodeService.cs" />

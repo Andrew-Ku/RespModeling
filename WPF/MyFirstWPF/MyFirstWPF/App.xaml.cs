@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using AutoMapper;
+using MyFirstWPF.Infrastructure;
 using MyFirstWPF.Profile;
 
 namespace MyFirstWPF
@@ -27,7 +28,7 @@ namespace MyFirstWPF
                 Shutdown();
             }
 
-          Mapper.Initialize(mapperConfiguration => mapperConfiguration.AddProfile(new NodeProfile()));
+          AutoMapperBootstrapper.Configuration();
         }
     }
 }

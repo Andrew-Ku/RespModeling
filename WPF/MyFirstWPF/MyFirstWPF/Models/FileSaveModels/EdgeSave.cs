@@ -7,9 +7,13 @@ using MyFirstWPF.Consts;
 
 namespace MyFirstWPF.Models
 {
-    public class ArrowLineSave
-    {
+    public class EdgeSave{
 
+        public int Id { get; set; }
+
+        public int FromNodeVmId { get; set; }
+
+        public int ToNodeVmId { get; set; }
 
         public double X1 { get; set; }
 
@@ -19,7 +23,7 @@ namespace MyFirstWPF.Models
 
         public double Y2 { get; set; }
 
-        ArrowEnds ArrowEnds { get; set; }
+        public ArrowEnds ArrowEnds { get; set; }
 
 
     }

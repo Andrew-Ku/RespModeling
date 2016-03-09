@@ -189,5 +189,15 @@ namespace MyFirstWPF.Services
             if (nullFlag)
                 nodeVm = null;
         }
+
+        public static void SetEdgeVmColor(ref EdgeVm edgeVm, bool nullFlag = false)
+        {
+            if (edgeVm == null) return;
+
+            edgeVm.ArrowLine.Stroke = EdgeColors.NormalEdge;
+
+            if (nullFlag)
+                edgeVm = null;
+        }
     }
 }

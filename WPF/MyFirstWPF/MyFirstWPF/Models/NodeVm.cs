@@ -28,9 +28,6 @@ namespace MyFirstWPF.Models
 
         public Node Node { get; set; }
 
-        public TextBlockSave TextBlockSave { get; set; }
-
-
         public static readonly DependencyProperty PositionProperty =
          DependencyProperty.Register("Position",
              typeof(Point), typeof(NodeVm),

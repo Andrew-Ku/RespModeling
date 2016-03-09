@@ -18,9 +18,13 @@ namespace MyFirstWPF.Profile
 
             Mapper.CreateMap<NodeVm, NodeVm>();
 
-            Mapper.CreateMap<TextBlock, TextBlockSave>();
+            Mapper.CreateMap<TextBlock, NodeSave>();
 
-            Mapper.CreateMap<ArrowLine, ArrowLineSave>();
+            Mapper.CreateMap<ArrowLine, EdgeSave>();
+
+            Mapper.CreateMap<Point, Point>();
+
+            Mapper.CreateMap<NodeRelation, NodeRelation>();
 
         }
     }

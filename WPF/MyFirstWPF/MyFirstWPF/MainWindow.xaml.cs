@@ -1,26 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Xaml;
 using AutoMapper;
 using Microsoft.Win32;
 using MyFirstWPF.Consts;
 using MyFirstWPF.Extensions;
-
+using MyFirstWPF.Infrastructure;
 using MyFirstWPF.Models;
 using MyFirstWPF.Services;
 
@@ -45,6 +39,7 @@ namespace MyFirstWPF
         public Point CurrPosition;
         public NodeVm MoveNodeVm;
         public NodeVm EditNodeVm;
+        public EdgeVm EditEdgeVm;
 
         public MainWindow()
         {
@@ -87,10 +82,8 @@ namespace MyFirstWPF
                     Margin = new Thickness(cursorPosition.X - NodeRadius, cursorPosition.Y - NodeRadius, 0.0, 0.0)
                 };
 
-                textBlock.MouseRightButtonDown += TextBlock_MouseRightButtonDown;
-                textBlock.MouseLeftButtonDown += TextBlock_MouseLeftButtonDown;
-                textBlock.MouseLeftButtonUp += TextBlock_MouseLeftButtonUp;
-                textBlock.MouseMove += TextBlock_MouseMove;
+
+                SetTextBlockEventHandles(textBlock);
 
                 WorkPlaceCanvas.RegisterName(textBlock.Name, textBlock);
 
@@ -105,13 +98,11 @@ namespace MyFirstWPF
 
                 NodeList.Add(node);
                 NodeVmList.Add(nodeVm);
-             
+
 
                 NodeService.SetNodeVmColor(ref nodeVm, border: NodeColors.NormalBorder);
 
                 WorkPlaceCanvas.Children.Add(nodeVm.TextBlock);
-
-                _fileService.SerializeObject(nodeVm);
             }
             e.Handled = true;
 
@@ -190,7 +181,9 @@ namespace MyFirstWPF
 
                     var edgeVm = new EdgeVm()
                     {
+                        FromNodeVmId = StartNodeVmEdge.Node.Id,
                         FromNodeVm = StartNodeVmEdge,
+                        ToNodeVmId = nodeVm.Node.Id,
                         ToNodeVm = nodeVm,
                         FromWeightLabel = new Label()
                         {
@@ -211,11 +204,12 @@ namespace MyFirstWPF
                             X2 = edgePos.Item2.X,
                             Y2 = edgePos.Item2.Y,
 
-                            Stroke = Brushes.Black,
-                            StrokeThickness = 2
+                            Stroke = EdgeColors.NormalEdge,
+                            StrokeThickness = EdgeThickness.NormalThickness
                         }
                     };
 
+                    SetArrowLineEventHandles(edgeVm.ArrowLine);
                     StartNodeVmEdge.EdgeVmList.Add(edgeVm);
                     nodeVm.EdgeVmList.Add(edgeVm);
 
@@ -236,12 +230,11 @@ namespace MyFirstWPF
         {
             NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
             NodeService.SetNodeVmColor(ref EditNodeVm);
+            NodeService.SetEdgeVmColor(ref EditEdgeVm, true);
 
             if (Keyboard.IsKeyDown(Key.D))
             {
                 var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
-
-                _fileService.SerializeObject(nodeVm);
                 DeleteNode(nodeVm);
             }
             else
@@ -310,16 +303,136 @@ namespace MyFirstWPF
 
         #endregion TextBlock Handle events
 
+        #region ArrowLine Hande events
+
+        private void ArrowLine_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (EditModeRadioButton.IsChecked.GetValueOrDefault())
+            {
+                NodeService.SetEdgeVmColor(ref EditEdgeVm, true);
+
+                var arrowLine = sender as ArrowLine;
+                arrowLine.Stroke = EdgeColors.SelectEdge;
+                EditEdgeVm = EdgeVmList.Single(ed => ed.ArrowLine.Equals(arrowLine));
+                var toNodeVm = EditEdgeVm.ToNodeVm;
+                var fromNodeVm = EditEdgeVm.FromNodeVm;
+
+                var weightFrom = fromNodeVm.Node.NodeRelations.SingleOrDefault(r => r.NodeId == toNodeVm.Node.Id);
+                var weightTo = toNodeVm.Node.NodeRelations.SingleOrDefault(r => r.NodeId == fromNodeVm.Node.Id);
+
+
+                if (weightFrom != null)
+                {
+                    EdgeLambdaTextBox1.Text = weightFrom.Weight.ToString();
+                    EdgeEditLabel1.Content = string.Format("Из {0} в {1}", fromNodeVm.Node.Id, toNodeVm.Node.Id);
+                }
+
+                if (weightTo != null)
+                {
+                    EdgeLambdaTextBox1.Text = weightTo.Weight.ToString();
+                    EdgeEditLabel2.Content = string.Format("Из {0} в {1}", toNodeVm.Node.Id, fromNodeVm.Node.Id);
+                }
+                
+                
+            }
+        }
+
+        private void ArrowLine_MouseLeave(object sender, MouseEventArgs e)
+        {
+            Cursor = Cursors.Arrow;
+
+        }
+
+        private void ArrowLine_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (EditModeRadioButton.IsChecked.GetValueOrDefault())
+            {
+                Cursor = Cursors.Hand;
+            }
+            
+        }
+
+        #endregion
+
+
         #region ButtonClick Handle events
 
         private void NewButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var s = WorkPlaceCanvas.FindName("TextBlock0");
-            NodeList.ClearEx();
-            NodeVmList.ClearEx();
-            LogTextBox.Clear();
-            EdgeVmList.Clear();
-            WorkPlaceCanvas.Children.Clear();
+            ClearModel();
+        }
+
+        private void SaveEditEdgeButton_OnClick(object sender, RoutedEventArgs e)
+        {
+                if(EditEdgeVm==null) return;
+
+                var toNodeVm = EditEdgeVm.ToNodeVm;
+                var fromNodeVm = EditEdgeVm.FromNodeVm;
+
+                var relationFrom = fromNodeVm.Node.NodeRelations.SingleOrDefault(r => r.NodeId == toNodeVm.Node.Id);
+                var relationTo = toNodeVm.Node.NodeRelations.SingleOrDefault(r => r.NodeId == fromNodeVm.Node.Id);
+
+
+            if (relationFrom != null && relationTo != null)
+            {
+                if (EdgeLambdaTextBox1.Text.Length == 0 || EdgeLambdaTextBox2.Text.Length == 0)
+                {
+                    MessageBox.Show("Все веса должны быть заданы");
+                    return;
+                }
+
+                var weight1 = double.Parse(EdgeLambdaTextBox1.Text, CultureInfo.InvariantCulture);
+                var weight2 = double.Parse(EdgeLambdaTextBox2.Text, CultureInfo.InvariantCulture);
+
+                if (weight1 == 0.0 || weight2 == 0.0)
+                {
+                    MessageBox.Show("Ребра графа должны иметь веса отличные от нуля");
+                    return;
+                }
+
+                relationFrom.Weight = weight1;
+                relationTo.Weight = weight2;
+            }
+
+            if (relationTo == null)
+            {
+                if (EdgeLambdaTextBox1.Text.Length == 0)
+                {
+                    MessageBox.Show("Все веса должны быть заданы");
+                    return;
+                }
+
+                var weight1 = double.Parse(EdgeLambdaTextBox1.Text, CultureInfo.InvariantCulture);
+                
+                if (weight1 == 0.0)
+                {
+                    MessageBox.Show("Ребра графа должны иметь веса отличные от нуля");
+                    return;
+                }
+
+                relationFrom.Weight = weight1;
+            }
+
+            if (relationFrom == null)
+            {
+                if (EdgeLambdaTextBox2.Text.Length == 0)
+                {
+                    MessageBox.Show("Все веса должны быть заданы");
+                    return;
+                }
+
+                var weight2 = double.Parse(EdgeLambdaTextBox2.Text, CultureInfo.InvariantCulture);
+               
+                if (weight2 == 0.0)
+                {
+                    MessageBox.Show("Ребра графа должны иметь веса отличные от нуля");
+                    return;
+                }
+
+                relationTo.Weight = weight2;
+            }
+
+                
         }
 
         private void SaveEditNodeButton_OnClick(object sender, RoutedEventArgs e)
@@ -364,33 +477,108 @@ namespace MyFirstWPF
 
         private void OpenButton_OnClick(object sender, RoutedEventArgs e)
         {
-           var  fileDialog = new OpenFileDialog
-           {
-               DefaultExt = ".xaml",
-               Filter = " (.xaml)|*.xaml"
-           };
-
-           var result = fileDialog.ShowDialog();
-         
-            if (result == true)
+            var fileDialog = new OpenFileDialog
             {
-                var filename = fileDialog.FileName;
+                DefaultExt = ".json",
+                Filter = " (.json)|*.json",
+                InitialDirectory = Environment.CurrentDirectory+"\\Json"
+            };
 
-                this.Content = _fileService.OpenFile(filename);
+            if (fileDialog.ShowDialog().GetValueOrDefault())
+            {
+                var modelState = _fileService.OpenFile(fileDialog.FileName);
+
+                if (modelState == null)
+                {
+                    MessageBox.Show("Ошибка при загрузке модели");
+                    return;
+                }
+
+                ClearModel();
+
+                Node.IsSetupStartNode = modelState.IsSetupStartNode;
+
+                foreach (var item in modelState.NodeSaveList)
+                {
+                    var node = Mapper.Map(item, new Node());
+                    var nodeVm = Mapper.Map(item, new NodeVm());
+                    nodeVm.Node = node;
+                    var paddingLeft = Node.NodeCount > 9 ? 12 : 17;
+
+                    nodeVm.TextBlock = new TextBlock()
+                    {
+                        Name = item.TextBlockName,
+                        Text = item.TextBlockText,
+                        Height = NodeRadius * 2.0,
+                        Width = NodeRadius * 2.0,
+                        Padding = new Thickness(paddingLeft, NodeRadius / 2.0, 0, 0),
+                        Margin = new Thickness(item.Position.X - NodeRadius, item.Position.Y - NodeRadius, 0.0, 0.0)
+                    };
+
+                    NodeService.SetNodeVmColor(ref nodeVm, border: NodeColors.NormalBorder);
+                    SetTextBlockEventHandles(nodeVm.TextBlock);
+                    WorkPlaceCanvas.RegisterName(nodeVm.TextBlock.Name, nodeVm.TextBlock);
+                    WorkPlaceCanvas.Children.Add(nodeVm.TextBlock);
+                    NodeList.Add(node);
+                    NodeVmList.Add(nodeVm);
+                }
+
+                foreach (var item in modelState.EdgeSaveList)
+                {
+                    var edgeVm = Mapper.Map(item, new EdgeVm());
+                    var fromNodeVm = NodeVmList.Single(n => n.Id == edgeVm.FromNodeVmId);
+                    var toNodeVm = NodeVmList.Single(n => n.Id == edgeVm.ToNodeVmId);
+
+                    fromNodeVm.EdgeVmList.Add(edgeVm);
+                    toNodeVm.EdgeVmList.Add(edgeVm);
+
+                    edgeVm.FromNodeVm = fromNodeVm;
+                    edgeVm.ToNodeVm = toNodeVm;
+                    edgeVm.ArrowLine = new ArrowLine()
+                    {
+                        X1 = item.X1,
+                        X2 = item.X2,
+                        Y1 = item.Y1,
+                        Y2 = item.Y2,
+                        ArrowEnds = item.ArrowEnds,
+                        Stroke = EdgeColors.NormalEdge,
+                        StrokeThickness = EdgeThickness.NormalThickness
+                    };
+
+                    SetArrowLineEventHandles(edgeVm.ArrowLine);
+                    EdgeVmList.Add(edgeVm);
+                    WorkPlaceCanvas.Children.Add(edgeVm.ArrowLine);
+                }
             }
         }
 
-        
+
 
         private void SaveButton_OnClick(object sender, RoutedEventArgs e)
         {
-          
-            
-            // Properties.Settings.Default.WindowSetting = new Window();
-          
+            if (!NodeList.Any()) return;
+
+            var modelState = new ModelStateSave()
+            {
+                IsSetupStartNode = Node.IsSetupStartNode,
+                NodeCount = Node.NodeCount
+            };
+            foreach (var edge in EdgeVmList)
+            {
+                modelState.EdgeSaveList.Add(Mapper.Map(edge, new EdgeSave()));
+            }
+
+            for (var i = 0; i < NodeList.Count(); i++)
+            {
+                var nodeSave = new NodeSave();
+                Mapper.Map(NodeList.ElementAt(i), nodeSave);
+                Mapper.Map(NodeVmList.ElementAt(i), nodeSave);
+
+                modelState.NodeSaveList.Add(nodeSave);
+            }
 
 
-            _fileService.SaveFile(this);
+            _fileService.SaveFile(modelState);
         }
 
         #endregion TextBlock Handle events
@@ -403,10 +591,36 @@ namespace MyFirstWPF
             e.Handled = regex.IsMatch(e.Text);
         }
 
+        private void EdgeLambdaValidation(object sender, KeyEventArgs e)
+        {
+            var ch = ForGetChar.GetCharFromKey(e.Key);
+            var textBox = sender as TextBox;
+
+            if (ch == 46 && textBox.Text.IndexOf('.') != -1)
+            {
+                e.Handled = true;
+                return;
+            }
+            if (ch == 46 && textBox.Text.Length==0)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            if (!char.IsDigit(ch) && ch != 8 && ch != 46)
+            {
+                e.Handled = true;
+            }
+        }
+
         private void ModeRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             if (EditNodeGrid == null) return;
             EditNodeGrid.Visibility = e.Source.Equals(EditModeRadioButton) ? Visibility.Visible : Visibility.Collapsed;
+
+            if (EditEdgeGrid == null) return;
+            EditEdgeGrid.Visibility = e.Source.Equals(EditModeRadioButton) ? Visibility.Visible : Visibility.Collapsed;
+
         }
 
         #endregion Others
@@ -481,8 +695,40 @@ namespace MyFirstWPF
             }
         }
 
+        private void ClearModel()
+        {
+            foreach (var nodeVm in NodeVmList)
+            {
+                WorkPlaceCanvas.UnregisterName(nodeVm.TextBlock.Name);
+            }
+
+            NodeList.ClearEx();
+            NodeVmList.ClearEx();
+            LogTextBox.Clear();
+            EdgeVmList.Clear();
+            WorkPlaceCanvas.Children.Clear();
+        }
+
+        public void SetTextBlockEventHandles(TextBlock textBlock)
+        {
+            textBlock.MouseRightButtonDown += TextBlock_MouseRightButtonDown;
+            textBlock.MouseLeftButtonDown += TextBlock_MouseLeftButtonDown;
+            textBlock.MouseLeftButtonUp += TextBlock_MouseLeftButtonUp;
+            textBlock.MouseMove += TextBlock_MouseMove;
+        }
+
+        public void SetArrowLineEventHandles(ArrowLine arrowLine)
+        {
+            arrowLine.MouseLeftButtonDown += ArrowLine_MouseLeftButtonDown;
+            arrowLine.MouseEnter += ArrowLine_MouseEnter;
+            arrowLine.MouseLeave += ArrowLine_MouseLeave;
+     
+        }
+
         #endregion Helpful methods
 
+       
 
+       
     }
 }

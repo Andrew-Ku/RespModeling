@@ -42,3 +42,8 @@ C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\Newtonsoft.Json.dll
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\Newtonsoft.Json.xml
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\AutoMapper.dll
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\AutoMapper.xml
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\alglibnet2.dll
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\AutoMapper.dll
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\Newtonsoft.Json.dll
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\AutoMapper.xml
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\Newtonsoft.Json.xml
