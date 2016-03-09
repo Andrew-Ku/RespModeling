@@ -11,28 +11,21 @@ using System.Xml;
 using AutoMapper;
 using MyFirstWPF.Models;
 using Newtonsoft.Json;
-using XamlReader = System.Windows.Markup.XamlReader;
-using XamlWriter = System.Windows.Markup.XamlWriter;
 
 namespace MyFirstWPF.Services
 {
     public class FileService
     {
-        public void SaveFile(ModelStateSave model)
+        public void SaveFile(ModelStateSave model, string path)
         {
             var jsonModel = JsonConvert.SerializeObject(model, new JsonSerializerSettings()
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Serialize
             });
 
-            var path = Path.Combine(Environment.CurrentDirectory, "Json");
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-
-            File.WriteAllText(Path.Combine(path, "NodeJson.json"), jsonModel);
+            File.WriteAllText(path, jsonModel);
         }
+
 
         public ModelStateSave OpenFile(string path)
         {

@@ -1,0 +1,78 @@
+;--Инициализирующий блок----------------
+Time EQU 1000 ; время моелирования
+True EQU 1
+False EQU 0
+Lambda01 EQU 0.5
+Lambda10 EQU 0.5
+
+initial x$workTimeAll,0
+initial x$notWorkTimeAll,0
+initial x$kGotov,0 ; коэффициент готовности
+initial x$CorrectStateMet,0 ;Метка для коррекции
+initial x$IsCorrect,0 ; нужна ли коррекция 
+initial x$kGotov,0 ; коэффициент готовности
+
+initial x$StateTime0,0 ; время в состояние 0
+initial x$StateTime1,0 ; время в состояние 1
+
+initial x$LambdaTime01,0 ; время по интенсивности
+initial x$LambdaTime10,0 ; время по интенсивности
+;---------------------------------------------------------------
+;--Непонятный блок----------------
+START 1
+;---------------------------------------------------------------
+;--Конечный блок--------------------
+GENERATE Time
+TEST E x$IsCorrect,True,FinishMet
+TRANSFER ,x$CorrectStateMet
+FinishMet SAVEVALUE TimeAll,(x$StateTime0+x$StateTime1)
+SAVEVALUE notWorkTimeAll,(x$StateTime1)
+SAVEVALUE workTimeAll,(x$StateTime0)
+SAVEVALUE prob0,(x$StateTime0/x$TimeAll)
+SAVEVALUE prob1,(x$StateTime1/x$TimeAll)
+SAVEVALUE kGotov,(x$workTimeAll/(x$notWorkTimeAll+x$workTimeAll))
+TERMINATE 1 
+;--------------------------------------------------------------
+;--Стартовый блок----------------
+GENERATE	,,,1,
+SEIZE DEV
+RELEASE DEV
+TRANSFER ,State0Met
+;---------------------------------------------------------------
+;--Состояние 0-----------------------
+State0Met ASSEMBLE 1
+SAVEVALUE LambdaTime01,(Exponential(1,0,1/Lambda01))
+ASSIGN State,State1Met
+ASSIGN Time,x$LambdaTime01
+exAdvance0Met SAVEVALUE CorrectStateMet,CorrectState0Met
+SAVEVALUE IsCorrect,True
+ADVANCE p$Time
+SAVEVALUE IsCorrect,False
+SAVEVALUE StateTime0+,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 1-----------------------
+State1Met ASSEMBLE 1
+SAVEVALUE LambdaTime10,(Exponential(1,0,1/Lambda10))
+ASSIGN State,State0Met
+ASSIGN Time,x$LambdaTime10
+ASSIGN ReturnState,ReturnState1Met
+exAdvance1Met SAVEVALUE CorrectStateMet,CorrectState1Met
+SAVEVALUE IsCorrect,True
+TRANSFER ,DevMet
+ReturnState1Met SAVEVALUE IsCorrect,False
+SAVEVALUE StateTime1+,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Устройство--------------------
+DevMet SEIZE DEV
+ADVANCE p$Time
+RELEASE DEV
+TRANSFER ,p$ReturnState
+;---------------------------------------------------------------
+;--Вспомогательный блок--------------------
+CorrectState0Met SAVEVALUE StateTime0+,(Time - (x$StateTime0+x$StateTime1))
+TRANSFER ,FinishMet
+CorrectState1Met SAVEVALUE StateTime1+,(Time - (x$StateTime0+x$StateTime1))
+TRANSFER ,FinishMet
+;---------------------------------------------------------------

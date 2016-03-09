@@ -73,6 +73,7 @@
     <Compile Include="Models\ArrowLine.cs" />
     <Compile Include="Models\FileSaveModels\EdgeSave.cs" />
     <Compile Include="Models\EdgeVm.cs" />
+    <Compile Include="Models\Generation\GpssInputModel.cs" />
     <Compile Include="Models\Node.cs" />
     <Compile Include="Models\NodeRelation.cs" />
     <Compile Include="Models\NodeVm.cs" />
@@ -80,8 +81,12 @@
     <Compile Include="Models\FileSaveModels\NodeSave.cs" />
     <Compile Include="Profile\StateSaveProfile.cs" />
     <Compile Include="Profile\NodeProfile.cs" />
+    <Compile Include="Services\GenerateService.cs" />
     <Compile Include="Services\MathService.cs" />
     <Compile Include="Services\NodeService.cs" />
+    <Compile Include="StartGpssWindow.xaml.cs">
+      <DependentUpon>StartGpssWindow.xaml</DependentUpon>
+    </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -94,6 +99,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="StartGpssWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

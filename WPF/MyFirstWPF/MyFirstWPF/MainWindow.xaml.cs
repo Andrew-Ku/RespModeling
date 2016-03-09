@@ -60,6 +60,15 @@ namespace MyFirstWPF
         #region WorkPlaceCanvas Handle events
         private void WorkPlaceCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            ClearViewModel();
+            ClearAllInputElement();
+
+            //if (Keyboard.IsKeyDown(Key.D))
+            //{
+            //    e.Handled = true;
+            //    return;
+            //}
+
             if (CreateModeRadioButton.IsChecked.GetValueOrDefault())
             {
                 var cursorPosition = e.GetPosition(WorkPlaceCanvas);
@@ -85,7 +94,7 @@ namespace MyFirstWPF
 
                 SetTextBlockEventHandles(textBlock);
 
-                WorkPlaceCanvas.RegisterName(textBlock.Name, textBlock);
+                //     WorkPlaceCanvas.RegisterName(textBlock.Name, textBlock);
 
 
                 var node = new Node();
@@ -117,6 +126,14 @@ namespace MyFirstWPF
         {
             MoveXPosLabel.Content = e.GetPosition(WorkPlaceCanvas).X.ToString("####");
             MoveYPosLabel.Content = e.GetPosition(WorkPlaceCanvas).Y.ToString("####");
+        }
+
+        private void WorkPlaceCanvas_OnMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (e.Delta < 0)
+                EditModeRadioButton.IsChecked = true;
+            else
+                CreateModeRadioButton.IsChecked = true;
         }
 
         #endregion WorkPlaceCanvas Handle events
@@ -236,6 +253,15 @@ namespace MyFirstWPF
             {
                 var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
                 DeleteNode(nodeVm);
+                e.Handled = true;
+                return;
+            }
+            if (Keyboard.IsKeyDown(Key.R))
+            {
+                var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
+                nodeVm.Node.IsRejectionNode = true;
+                e.Handled = true;
+                return;
             }
             else
             {
@@ -246,7 +272,6 @@ namespace MyFirstWPF
                     MoveNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
                     NodeService.SetNodeVmColor(ref MoveNodeVm, border: NodeColors.MoveNodeBorder);
                     Mouse.Capture(MoveNodeVm.TextBlock);
-                    MoveFlagLabel.Content = MoveFlag.ToString();
                 }
                 if (EditModeRadioButton.IsChecked == true)
                 {
@@ -276,7 +301,6 @@ namespace MyFirstWPF
             if (MoveNodeVm == null) return;
             Mouse.Capture(null);
             MoveFlag = false;
-            MoveFlagLabel.Content = MoveFlag.ToString();
             NodeService.SetNodeVmColor(ref MoveNodeVm, border: NodeColors.NormalBorder);
             MoveNodeVm = null;
             e.Handled = true;
@@ -307,10 +331,18 @@ namespace MyFirstWPF
 
         private void ArrowLine_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            NodeService.SetEdgeVmColor(ref EditEdgeVm, true);
+
+            if (Keyboard.IsKeyDown(Key.D))
+            {
+                var edgeVm = EdgeVmList.Single(n => Equals(n.ArrowLine, sender));
+                DeleteEdge(edgeVm);
+                e.Handled = true;
+                return;
+            }
+
             if (EditModeRadioButton.IsChecked.GetValueOrDefault())
             {
-                NodeService.SetEdgeVmColor(ref EditEdgeVm, true);
-
                 var arrowLine = sender as ArrowLine;
                 arrowLine.Stroke = EdgeColors.SelectEdge;
                 EditEdgeVm = EdgeVmList.Single(ed => ed.ArrowLine.Equals(arrowLine));
@@ -320,20 +352,30 @@ namespace MyFirstWPF
                 var weightFrom = fromNodeVm.Node.NodeRelations.SingleOrDefault(r => r.NodeId == toNodeVm.Node.Id);
                 var weightTo = toNodeVm.Node.NodeRelations.SingleOrDefault(r => r.NodeId == fromNodeVm.Node.Id);
 
-
                 if (weightFrom != null)
                 {
                     EdgeLambdaTextBox1.Text = weightFrom.Weight.ToString();
                     EdgeEditLabel1.Content = string.Format("Из {0} в {1}", fromNodeVm.Node.Id, toNodeVm.Node.Id);
                 }
+                else
+                {
+                    EdgeLambdaTextBox1.Text = string.Empty;
+                    EdgeEditLabel1.Content = string.Format("Из {1} в {0}", fromNodeVm.Node.Id, toNodeVm.Node.Id);
+                }
 
                 if (weightTo != null)
                 {
-                    EdgeLambdaTextBox1.Text = weightTo.Weight.ToString();
+                    EdgeLambdaTextBox2.Text = weightTo.Weight.ToString();
                     EdgeEditLabel2.Content = string.Format("Из {0} в {1}", toNodeVm.Node.Id, fromNodeVm.Node.Id);
                 }
-                
-                
+                else
+                {
+                    EdgeLambdaTextBox2.Text = string.Empty;
+                    EdgeEditLabel2.Content = string.Format("Из {1} в {0}", fromNodeVm.Node.Id, toNodeVm.Node.Id);
+                }
+
+                e.Handled = true;
+
             }
         }
 
@@ -349,13 +391,28 @@ namespace MyFirstWPF
             {
                 Cursor = Cursors.Hand;
             }
-            
         }
 
         #endregion
 
-
         #region ButtonClick Handle events
+
+        private void GenerateButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (NodeList.All(n => !n.IsRejectionNode))
+            {
+                MessageBox.Show("Обязательно должно быть задано хотябы одно отказное состояние");
+                return;
+            }
+            if (!NodeList.Any())
+            {
+                MessageBox.Show("Отсутсвует модель для генерации");
+                return;
+            }
+            var genWindow = new StartGpssWindow(NodeList);
+            genWindow.ShowDialog();
+
+        }
 
         private void NewButton_OnClick(object sender, RoutedEventArgs e)
         {
@@ -364,13 +421,13 @@ namespace MyFirstWPF
 
         private void SaveEditEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
-                if(EditEdgeVm==null) return;
+            if (EditEdgeVm == null) return;
 
-                var toNodeVm = EditEdgeVm.ToNodeVm;
-                var fromNodeVm = EditEdgeVm.FromNodeVm;
+            var toNodeVm = EditEdgeVm.ToNodeVm;
+            var fromNodeVm = EditEdgeVm.FromNodeVm;
 
-                var relationFrom = fromNodeVm.Node.NodeRelations.SingleOrDefault(r => r.NodeId == toNodeVm.Node.Id);
-                var relationTo = toNodeVm.Node.NodeRelations.SingleOrDefault(r => r.NodeId == fromNodeVm.Node.Id);
+            var relationFrom = fromNodeVm.Node.NodeRelations.SingleOrDefault(r => r.NodeId == toNodeVm.Node.Id);
+            var relationTo = toNodeVm.Node.NodeRelations.SingleOrDefault(r => r.NodeId == fromNodeVm.Node.Id);
 
 
             if (relationFrom != null && relationTo != null)
@@ -403,7 +460,7 @@ namespace MyFirstWPF
                 }
 
                 var weight1 = double.Parse(EdgeLambdaTextBox1.Text, CultureInfo.InvariantCulture);
-                
+
                 if (weight1 == 0.0)
                 {
                     MessageBox.Show("Ребра графа должны иметь веса отличные от нуля");
@@ -422,7 +479,7 @@ namespace MyFirstWPF
                 }
 
                 var weight2 = double.Parse(EdgeLambdaTextBox2.Text, CultureInfo.InvariantCulture);
-               
+
                 if (weight2 == 0.0)
                 {
                     MessageBox.Show("Ребра графа должны иметь веса отличные от нуля");
@@ -432,7 +489,11 @@ namespace MyFirstWPF
                 relationTo.Weight = weight2;
             }
 
-                
+            EdgeLambdaTextBox1.Text = "";
+            EdgeLambdaTextBox2.Text = "";
+            NodeService.SetEdgeVmColor(ref EditEdgeVm);
+
+
         }
 
         private void SaveEditNodeButton_OnClick(object sender, RoutedEventArgs e)
@@ -462,16 +523,16 @@ namespace MyFirstWPF
                 oldStartNode.IsStartNode = false;
                 var oldStartNodeVm = NodeVmList.Single(nv => nv.Node.Equals(oldStartNode));
                 oldStartNodeVm.TextBlock.Background = new VisualBrush(NodeService.GetEllipse(NodeRadius, NodeColors.NormalBackground, NodeColors.NormalBorder));
-                //  NodeService.SetNodeVmColor(ref oldStartNodeVm, border: NodeColors.NormalBorder);
                 var newStartNodeVm = NodeVmList.Single(nv => nv.Equals(EditNodeVm));
                 newStartNodeVm.TextBlock.Background = new VisualBrush(NodeService.GetEllipse(NodeRadius, NodeColors.StartNodeBackground, NodeColors.NormalBorder));
-                //     NodeService.SetNodeVmColor(ref newStartNodeVm, border: NodeColors.NormalBorder);
+
             }
 
             ChangeNodeId(EditNodeVm.Node.Id, number);
             EditNodeVm.Node.IsStartNode = StartNodeCheckBox.IsChecked.GetValueOrDefault();
             EditNodeVm.Node.IsRejectionNode = RejectionNodeCheckBox.IsChecked.GetValueOrDefault();
 
+            NodeNumberTextBox.Clear();
             NodeService.SetNodeVmColor(ref EditNodeVm, border: NodeColors.NormalBorder);
         }
 
@@ -481,7 +542,7 @@ namespace MyFirstWPF
             {
                 DefaultExt = ".json",
                 Filter = " (.json)|*.json",
-                InitialDirectory = Environment.CurrentDirectory+"\\Json"
+                InitialDirectory = Environment.CurrentDirectory + "\\Json"
             };
 
             if (fileDialog.ShowDialog().GetValueOrDefault())
@@ -495,6 +556,7 @@ namespace MyFirstWPF
                 }
 
                 ClearModel();
+                ClearViewModel();
 
                 Node.IsSetupStartNode = modelState.IsSetupStartNode;
 
@@ -512,12 +574,12 @@ namespace MyFirstWPF
                         Height = NodeRadius * 2.0,
                         Width = NodeRadius * 2.0,
                         Padding = new Thickness(paddingLeft, NodeRadius / 2.0, 0, 0),
-                        Margin = new Thickness(item.Position.X - NodeRadius, item.Position.Y - NodeRadius, 0.0, 0.0)
+                        Margin = new Thickness(item.Position.X - NodeRadius, item.Position.Y - NodeRadius, 0.0, 0.0),
                     };
 
                     NodeService.SetNodeVmColor(ref nodeVm, border: NodeColors.NormalBorder);
                     SetTextBlockEventHandles(nodeVm.TextBlock);
-                    WorkPlaceCanvas.RegisterName(nodeVm.TextBlock.Name, nodeVm.TextBlock);
+                    //   WorkPlaceCanvas.RegisterName(nodeVm.TextBlock.Name, nodeVm.TextBlock);
                     WorkPlaceCanvas.Children.Add(nodeVm.TextBlock);
                     NodeList.Add(node);
                     NodeVmList.Add(nodeVm);
@@ -552,8 +614,6 @@ namespace MyFirstWPF
             }
         }
 
-
-
         private void SaveButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (!NodeList.Any()) return;
@@ -577,8 +637,21 @@ namespace MyFirstWPF
                 modelState.NodeSaveList.Add(nodeSave);
             }
 
+            var saveDialog = new SaveFileDialog
+           {
+               FileName = "Document",
+               DefaultExt = ".json",
+               Filter = "Text documents (.json)|*.json",
+               InitialDirectory = Environment.CurrentDirectory + "\\Json"
+           };
 
-            _fileService.SaveFile(modelState);
+            var result = saveDialog.ShowDialog();
+
+            if (result == true)
+            {
+                var fileName = saveDialog.FileName;
+                _fileService.SaveFile(modelState, fileName);
+            }
         }
 
         #endregion TextBlock Handle events
@@ -601,7 +674,7 @@ namespace MyFirstWPF
                 e.Handled = true;
                 return;
             }
-            if (ch == 46 && textBox.Text.Length==0)
+            if (ch == 46 && textBox.Text.Length == 0)
             {
                 e.Handled = true;
                 return;
@@ -615,6 +688,8 @@ namespace MyFirstWPF
 
         private void ModeRadioButton_Checked(object sender, RoutedEventArgs e)
         {
+            ClearViewModel();
+
             if (EditNodeGrid == null) return;
             EditNodeGrid.Visibility = e.Source.Equals(EditModeRadioButton) ? Visibility.Visible : Visibility.Collapsed;
 
@@ -674,6 +749,31 @@ namespace MyFirstWPF
             NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
         }
 
+
+        private void DeleteEdge(EdgeVm edgeVm)
+        {
+            var fromNodeVm = NodeVmList.SingleOrDefault(nv => nv.Node.Id == edgeVm.FromNodeVmId);
+            var toNodeVm = NodeVmList.SingleOrDefault(nv => nv.Node.Id == edgeVm.ToNodeVmId);
+
+            if (fromNodeVm != null)
+            {
+                fromNodeVm.EdgeVmList.Remove(edgeVm);
+                fromNodeVm.Node.NodeRelations.RemoveAll(r => r.NodeId == edgeVm.ToNodeVmId);
+            }
+            if (toNodeVm != null)
+            {
+                toNodeVm.EdgeVmList.Remove(edgeVm);
+                toNodeVm.Node.NodeRelations.RemoveAll(r => r.NodeId == edgeVm.FromNodeVmId);
+            }
+
+            EdgeVmList.Remove(edgeVm);
+
+            WorkPlaceCanvas.Children.Remove(edgeVm.ArrowLine);
+
+
+        }
+
+
         private void ChangeNodeId(int oldId, int newId)
         {
             var node = NodeList.Single(n => n.Id == oldId);
@@ -697,16 +797,26 @@ namespace MyFirstWPF
 
         private void ClearModel()
         {
-            foreach (var nodeVm in NodeVmList)
-            {
-                WorkPlaceCanvas.UnregisterName(nodeVm.TextBlock.Name);
-            }
-
             NodeList.ClearEx();
             NodeVmList.ClearEx();
-            LogTextBox.Clear();
             EdgeVmList.Clear();
             WorkPlaceCanvas.Children.Clear();
+            ClearViewModel();
+        }
+
+        private void ClearViewModel()
+        {
+            NodeService.SetNodeVmColor(ref MoveNodeVm, true);
+            NodeService.SetNodeVmColor(ref EditNodeVm, true);
+            NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
+            NodeService.SetEdgeVmColor(ref EditEdgeVm, true);
+        }
+
+        private void ClearAllInputElement()
+        {
+            EdgeLambdaTextBox1.Clear();
+            EdgeLambdaTextBox2.Clear();
+            NodeNumberTextBox.Clear();
         }
 
         public void SetTextBlockEventHandles(TextBlock textBlock)
@@ -722,13 +832,54 @@ namespace MyFirstWPF
             arrowLine.MouseLeftButtonDown += ArrowLine_MouseLeftButtonDown;
             arrowLine.MouseEnter += ArrowLine_MouseEnter;
             arrowLine.MouseLeave += ArrowLine_MouseLeave;
-     
+
+        }
+
+        public bool HotKeys(object obj)
+        {
+            if (obj is TextBlock)
+            {
+                if (Keyboard.IsKeyDown(Key.D))
+                {
+                    var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, obj as TextBlock));
+                    DeleteNode(nodeVm);
+                    return true;
+                }
+
+                if (Keyboard.IsKeyDown(Key.R))
+                {
+                    var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, obj as TextBlock));
+                    nodeVm.Node.IsRejectionNode = true;
+                    return true;
+                }
+            }
+            if (obj is ArrowLine)
+            {
+
+                if (Keyboard.IsKeyDown(Key.D))
+                {
+                    var edgeVm = EdgeVmList.Single(n => Equals(n.ArrowLine, obj as ArrowLine));
+                    DeleteEdge(edgeVm);
+                    return true;
+                }
+            }
+
+            if (obj is Canvas)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         #endregion Helpful methods
 
-       
 
-       
+        #region MainWindow events handler
+
+
+        #endregion
+
+
     }
 }

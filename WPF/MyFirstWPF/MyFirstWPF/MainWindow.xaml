@@ -17,7 +17,7 @@
                 <Label Name="MoveXPosLabel" Content="X" MinWidth="30" HorizontalContentAlignment="Right"/>
                 <Label Name="MoveYPosLabel" Content="Y" MinWidth="30" HorizontalContentAlignment="Right"/>
             </StackPanel>
-            <StackPanel DockPanel.Dock="Left" Orientation="Vertical" MinWidth="140" Background="WhiteSmoke" >
+            <StackPanel DockPanel.Dock="Left" Orientation="Vertical" MinWidth="150" Background="WhiteSmoke" >
                 <Label Content="Режимы:"/>
                 <RadioButton Name="CreateModeRadioButton" Content="Режим создания" IsChecked="True" Checked="ModeRadioButton_Checked"/>
                 <RadioButton Name="EditModeRadioButton"  Content="Редактирование" Checked="ModeRadioButton_Checked"/>
@@ -54,7 +54,7 @@
                         <RowDefinition></RowDefinition>
                         <RowDefinition></RowDefinition>
                         <RowDefinition></RowDefinition>
-                       
+
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition ></ColumnDefinition>
@@ -71,25 +71,48 @@
                              VerticalAlignment="Bottom"
                             
                              Margin="5,1,5,1"/>
-                   
+
+
+
                     <Button Name="SaveEditEdgeButton" Grid.Row="3" Grid.Column="0" Margin="5,1,2,1" Click="SaveEditEdgeButton_OnClick">Сохранить</Button>
-                    
+
 
 
                 </Grid>
-
-                <RadioButton Name="EditModeRadioButton1"  Content="Редактирование" Checked="ModeRadioButton_Checked"/>
             </StackPanel>
             <StackPanel Name="RightStackPanel"  DockPanel.Dock="Right" Orientation="Vertical" MinWidth="140" Background="WhiteSmoke" HorizontalAlignment="Right">
-                <TextBox Name="LogTextBox" Height="50" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="200"  ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto"
-                     ScrollViewer.CanContentScroll="True">
-                </TextBox>
-                <Label Name="MoveFlagLabel" Content="False" MinWidth="30" HorizontalContentAlignment="Center"/>
-                
+
+                <Grid Height="100">
+                    <Grid.RowDefinitions>
+                        <RowDefinition ></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+
+
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition ></ColumnDefinition>
+                        <ColumnDefinition ></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+
+                    <Label   Grid.Row="0" Grid.Column="0" Content="Время моделирования:" HorizontalContentAlignment="Right"></Label>
+                    <Label   Grid.Row="1" Grid.Column="0" Content="Время наблюдения:" HorizontalContentAlignment="Right"></Label>
+                    <Label Name="ModelingTimeLabel"   Grid.Row="0" Grid.Column="1" Content="" HorizontalContentAlignment="Left"></Label>
+                    <Label Name="ObservationTomeLabel"  Grid.Row="1" Grid.Column="1" Content="" HorizontalContentAlignment="Left"></Label>
+                    <Button Grid.Row="2" Name="GenerateButton"  Margin="12,58,0,-157" Click="GenerateButton_OnClick">Генерация</Button>
+                </Grid>
+
+
+
+
             </StackPanel>
             <Border Width="auto" Height="auto" BorderBrush="DarkSlateGray" BorderThickness="1">
-                <Canvas Name="WorkPlaceCanvas" Background="Azure" MouseLeftButtonDown="WorkPlaceCanvas_MouseLeftButtonDown" MouseRightButtonDown="WorkPlaceCanvas_MouseRightButtonDown" MouseMove="WorkPlaceCanvas_MouseMove">
+                <Canvas Name="WorkPlaceCanvas" 
+                        Background="Azure" 
+                        MouseLeftButtonDown="WorkPlaceCanvas_MouseLeftButtonDown" 
+                        MouseRightButtonDown="WorkPlaceCanvas_MouseRightButtonDown"
+                        MouseMove="WorkPlaceCanvas_MouseMove"
+                        MouseWheel="WorkPlaceCanvas_OnMouseWheel">
 
                 </Canvas>
             </Border>
