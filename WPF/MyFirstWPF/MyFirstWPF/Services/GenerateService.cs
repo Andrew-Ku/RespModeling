@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -29,6 +30,8 @@ namespace MyFirstWPF.Services
 
 
             File.WriteAllText(path, result.ToString());
+
+            Process.Start(path);
         
         }
 
@@ -62,6 +65,7 @@ namespace MyFirstWPF.Services
             foreach (var node in model.Nodes)
             {
                 result.AppendLine(string.Format("initial x$StateTime{0},0 ; время в состояние {0}", node.Id));
+                result.AppendLine(string.Format("initial x$StateCount{0},0 ; число заходов с состояние {0}", node.Id));
             }
 
             result.AppendLine("");
@@ -98,6 +102,7 @@ namespace MyFirstWPF.Services
             result.AppendLine(";--Непонятный блок----------------");
           
             result.AppendLine("START 1");
+            result.AppendLine("RMULT 1281");
 
             result.AppendLine(";---------------------------------------------------------------");
 
@@ -176,7 +181,7 @@ namespace MyFirstWPF.Services
                     {
                         var nextRelation = node.NodeRelations.ElementAt(i + 1);
 
-                        result.AppendLine(string.Format("Advance{0}{1}Met TEST L x$LambdaTime{0}{1},p$Time,Advance{0}{2}",node.Id, relation.NodeId, nextRelation));
+                        result.AppendLine(string.Format("Advance{0}{1}Met TEST L x$LambdaTime{0}{1},p$Time,Advance{0}{2}Met",node.Id, relation.NodeId, nextRelation.NodeId));
                         result.AppendLine(string.Format("ASSIGN State,State{0}Met", relation.NodeId));
                         result.AppendLine(string.Format("ASSIGN Time,x$LambdaTime{0}{1}", node.Id, relation.NodeId));
                     }
@@ -191,6 +196,7 @@ namespace MyFirstWPF.Services
 
             result.AppendLine(string.Format("exAdvance{0}Met SAVEVALUE CorrectStateMet,CorrectState{0}Met", node.Id));
             result.AppendLine(string.Format("SAVEVALUE IsCorrect,True"));
+            result.AppendLine(string.Format("SAVEVALUE StateCount{0}+,1", node.Id));
 
             result.AppendLine(node.IsRejectionNode ? string.Format("TRANSFER ,DevMet") : string.Format("ADVANCE p$Time"));
             result.AppendLine(node.IsRejectionNode ? string.Format("ReturnState{0}Met SAVEVALUE IsCorrect,False",node.Id) : string.Format("SAVEVALUE IsCorrect,False"));
@@ -241,6 +247,27 @@ namespace MyFirstWPF.Services
             }
 
             result.AppendLine(string.Format("SAVEVALUE kGotov,(x$workTimeAll/(x$notWorkTimeAll+x$workTimeAll))"));
+
+            var sumCountWork = new StringBuilder();
+            foreach (var node in model.Nodes.Where(n=>!n.IsRejectionNode))
+            {
+                sumCountWork.Append(string.Format("x$StateCount{0}+", node.Id));
+            }
+            sumCountWork.Remove(sumCountWork.Length - 1, 1);
+
+            var sumCountNotWork = new StringBuilder();
+            foreach (var node in model.Nodes.Where(n => n.IsRejectionNode))
+            {
+                sumCountNotWork.Append(string.Format("x$StateCount{0}+", node.Id));
+            }
+            sumCountNotWork.Remove(sumCountNotWork.Length - 1, 1);
+
+            result.AppendLine(string.Format("SAVEVALUE Tw,(x$workTimeAll/({0}))", sumCountWork));
+            result.AppendLine(string.Format("SAVEVALUE Tv,(x$notWorkTimeAll/({0}))", sumCountNotWork));
+            result.AppendLine(string.Format("SAVEVALUE kGotovMid,(x$Tw/(x$Tw+x$Tv))"));
+
+
+
             result.AppendLine(string.Format("TERMINATE 1 "));
 
             result.AppendLine(";--------------------------------------------------------------");

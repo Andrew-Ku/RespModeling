@@ -1,5 +1,5 @@
 ;--Инициализирующий блок----------------
-Time EQU 1444 ; время моелирования
+Time EQU 10000 ; время моелирования
 True EQU 1
 False EQU 0
 Lambda01 EQU 0.03
@@ -80,7 +80,7 @@ SAVEVALUE LambdaTime10,(Exponential(1,0,1/Lambda10))
 SAVEVALUE LambdaTime14,(Exponential(1,0,1/Lambda14))
 ASSIGN State,State3Met
 ASSIGN Time,x$LambdaTime13
-Advance10Met TEST L x$LambdaTime10,p$Time,Advance1MyFirstWPF.Models.NodeRelation
+Advance10Met TEST L x$LambdaTime10,p$Time,Advance14Met
 ASSIGN State,State0Met
 ASSIGN Time,x$LambdaTime10
 Advance14Met TEST L x$LambdaTime14,p$Time,exAdvance1Met

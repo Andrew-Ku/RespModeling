@@ -69,6 +69,12 @@ namespace MyFirstWPF
             //    return;
             //}
 
+            if (HotKeys(sender))
+            {
+                e.Handled = true;
+                return;
+            }
+
             if (CreateModeRadioButton.IsChecked.GetValueOrDefault())
             {
                 var cursorPosition = e.GetPosition(WorkPlaceCanvas);
@@ -184,7 +190,7 @@ namespace MyFirstWPF
                         });
 
 
-                        NodeService.SetNodeVmColor(ref StartNodeVmEdge);
+                        NodeService.SetNodeVmColor(ref StartNodeVmEdge,true);
                         return;
                     }
 
@@ -249,48 +255,37 @@ namespace MyFirstWPF
             NodeService.SetNodeVmColor(ref EditNodeVm);
             NodeService.SetEdgeVmColor(ref EditEdgeVm, true);
 
-            if (Keyboard.IsKeyDown(Key.D))
+            if (HotKeys(sender))
             {
-                var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
-                DeleteNode(nodeVm);
                 e.Handled = true;
                 return;
             }
-            if (Keyboard.IsKeyDown(Key.R))
-            {
-                var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
-                nodeVm.Node.IsRejectionNode = true;
-                e.Handled = true;
-                return;
-            }
-            else
-            {
-                if (CreateModeRadioButton.IsChecked == true)
-                {
-                    CurrPosition = e.GetPosition(WorkPlaceCanvas);
-                    MoveFlag = true;
-                    MoveNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
-                    NodeService.SetNodeVmColor(ref MoveNodeVm, border: NodeColors.MoveNodeBorder);
-                    Mouse.Capture(MoveNodeVm.TextBlock);
-                }
-                if (EditModeRadioButton.IsChecked == true)
-                {
-                    EditNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
-                    NodeService.SetNodeVmColor(ref EditNodeVm, border: NodeColors.EditNodeBorder);
-                    NodeNumberTextBox.Text = EditNodeVm.Node.Id.ToString();
-                    StartNodeCheckBox.IsChecked = EditNodeVm.Node.IsStartNode;
-                    RejectionNodeCheckBox.IsChecked = EditNodeVm.Node.IsRejectionNode;
 
-                    if (EditNodeVm.Node.IsStartNode)
-                    {
-                        StartNodeCheckBox.IsEnabled = false;
-                        RejectionNodeCheckBox.IsEnabled = false;
-                    }
-                    else
-                    {
-                        StartNodeCheckBox.IsEnabled = true;
-                        RejectionNodeCheckBox.IsEnabled = true;
-                    }
+            if (CreateModeRadioButton.IsChecked == true)
+            {
+                CurrPosition = e.GetPosition(WorkPlaceCanvas);
+                MoveFlag = true;
+                MoveNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
+                NodeService.SetNodeVmColor(ref MoveNodeVm, border: NodeColors.MoveNodeBorder);
+                Mouse.Capture(MoveNodeVm.TextBlock);
+            }
+            if (EditModeRadioButton.IsChecked == true)
+            {
+                EditNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
+                NodeService.SetNodeVmColor(ref EditNodeVm, border: NodeColors.EditNodeBorder);
+                NodeNumberTextBox.Text = EditNodeVm.Node.Id.ToString();
+                StartNodeCheckBox.IsChecked = EditNodeVm.Node.IsStartNode;
+                RejectionNodeCheckBox.IsChecked = EditNodeVm.Node.IsRejectionNode;
+
+                if (EditNodeVm.Node.IsStartNode)
+                {
+                    StartNodeCheckBox.IsEnabled = false;
+                    RejectionNodeCheckBox.IsEnabled = false;
+                }
+                else
+                {
+                    StartNodeCheckBox.IsEnabled = true;
+                    RejectionNodeCheckBox.IsEnabled = true;
                 }
             }
 
@@ -333,10 +328,8 @@ namespace MyFirstWPF
         {
             NodeService.SetEdgeVmColor(ref EditEdgeVm, true);
 
-            if (Keyboard.IsKeyDown(Key.D))
+            if (HotKeys(sender))
             {
-                var edgeVm = EdgeVmList.Single(n => Equals(n.ArrowLine, sender));
-                DeleteEdge(edgeVm);
                 e.Handled = true;
                 return;
             }
@@ -849,7 +842,8 @@ namespace MyFirstWPF
                 if (Keyboard.IsKeyDown(Key.R))
                 {
                     var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, obj as TextBlock));
-                    nodeVm.Node.IsRejectionNode = true;
+                    nodeVm.Node.IsRejectionNode = !nodeVm.Node.IsRejectionNode;
+                    NodeService.SetNodeVmColor(ref nodeVm);
                     return true;
                 }
             }
@@ -866,7 +860,10 @@ namespace MyFirstWPF
 
             if (obj is Canvas)
             {
-                return true;
+                if (Keyboard.IsKeyDown(Key.D))
+                {
+                    return true;
+                }
             }
 
             return false;

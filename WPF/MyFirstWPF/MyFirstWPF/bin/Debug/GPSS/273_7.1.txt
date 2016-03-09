@@ -1,15 +1,11 @@
 ;--Инициализирующий блок----------------
-Time EQU 1444 ; время моелирования
+Time EQU 1111111 ; время моелирования
 True EQU 1
 False EQU 0
-Lambda01 EQU 0.03
-Lambda02 EQU 0.0001
-Lambda13 EQU 0.0001
-Lambda10 EQU 0.1
-Lambda14 EQU 0.04
-Lambda20 EQU 1
-Lambda31 EQU 1
-Lambda41 EQU 0.1
+Lambda01 EQU 0.1
+Lambda02 EQU 0.15
+Lambda10 EQU 1
+Lambda20 EQU 12
 
 initial x$workTimeAll,0
 initial x$notWorkTimeAll,0
@@ -19,19 +15,16 @@ initial x$IsCorrect,0 ; нужна ли коррекция
 initial x$kGotov,0 ; коэффициент готовности
 
 initial x$StateTime0,0 ; время в состояние 0
+initial x$StateCount0,0 ; число заходов с состояние 0
 initial x$StateTime1,0 ; время в состояние 1
+initial x$StateCount1,0 ; число заходов с состояние 1
 initial x$StateTime2,0 ; время в состояние 2
-initial x$StateTime3,0 ; время в состояние 3
-initial x$StateTime4,0 ; время в состояние 4
+initial x$StateCount2,0 ; число заходов с состояние 2
 
 initial x$LambdaTime01,0 ; время по интенсивности
 initial x$LambdaTime02,0 ; время по интенсивности
-initial x$LambdaTime13,0 ; время по интенсивности
 initial x$LambdaTime10,0 ; время по интенсивности
-initial x$LambdaTime14,0 ; время по интенсивности
 initial x$LambdaTime20,0 ; время по интенсивности
-initial x$LambdaTime31,0 ; время по интенсивности
-initial x$LambdaTime41,0 ; время по интенсивности
 ;---------------------------------------------------------------
 ;--Непонятный блок----------------
 START 1
@@ -40,15 +33,16 @@ START 1
 GENERATE Time
 TEST E x$IsCorrect,True,FinishMet
 TRANSFER ,x$CorrectStateMet
-FinishMet SAVEVALUE TimeAll,(x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4)
-SAVEVALUE notWorkTimeAll,(x$StateTime2+x$StateTime3+x$StateTime4)
-SAVEVALUE workTimeAll,(x$StateTime0+x$StateTime1)
+FinishMet SAVEVALUE TimeAll,(x$StateTime0+x$StateTime1+x$StateTime2)
+SAVEVALUE notWorkTimeAll,(x$StateTime1+x$StateTime2)
+SAVEVALUE workTimeAll,(x$StateTime0)
 SAVEVALUE prob0,(x$StateTime0/x$TimeAll)
 SAVEVALUE prob1,(x$StateTime1/x$TimeAll)
 SAVEVALUE prob2,(x$StateTime2/x$TimeAll)
-SAVEVALUE prob3,(x$StateTime3/x$TimeAll)
-SAVEVALUE prob4,(x$StateTime4/x$TimeAll)
 SAVEVALUE kGotov,(x$workTimeAll/(x$notWorkTimeAll+x$workTimeAll))
+SAVEVALUE Tw,(x$workTimeAll/(x$StateCount0))
+SAVEVALUE Tv,(x$notWorkTimeAll/(x$StateCount1+x$StateCount2))
+SAVEVALUE kGotovMid,(x$Tw/(x$Tw+x$Tv))
 TERMINATE 1 
 ;--------------------------------------------------------------
 ;--Стартовый блок----------------
@@ -68,6 +62,7 @@ ASSIGN State,State2Met
 ASSIGN Time,x$LambdaTime02
 exAdvance0Met SAVEVALUE CorrectStateMet,CorrectState0Met
 SAVEVALUE IsCorrect,True
+SAVEVALUE StateCount0+,1
 ADVANCE p$Time
 SAVEVALUE IsCorrect,False
 SAVEVALUE StateTime0+,p$Time
@@ -75,21 +70,15 @@ TRANSFER ,p$State
 ;---------------------------------------------------------------
 ;--Состояние 1-----------------------
 State1Met ASSEMBLE 1
-SAVEVALUE LambdaTime13,(Exponential(1,0,1/Lambda13))
 SAVEVALUE LambdaTime10,(Exponential(1,0,1/Lambda10))
-SAVEVALUE LambdaTime14,(Exponential(1,0,1/Lambda14))
-ASSIGN State,State3Met
-ASSIGN Time,x$LambdaTime13
-Advance10Met TEST L x$LambdaTime10,p$Time,Advance1MyFirstWPF.Models.NodeRelation
 ASSIGN State,State0Met
 ASSIGN Time,x$LambdaTime10
-Advance14Met TEST L x$LambdaTime14,p$Time,exAdvance1Met
-ASSIGN State,State4Met
-ASSIGN Time,x$LambdaTime14
+ASSIGN ReturnState,ReturnState1Met
 exAdvance1Met SAVEVALUE CorrectStateMet,CorrectState1Met
 SAVEVALUE IsCorrect,True
-ADVANCE p$Time
-SAVEVALUE IsCorrect,False
+SAVEVALUE StateCount1+,1
+TRANSFER ,DevMet
+ReturnState1Met SAVEVALUE IsCorrect,False
 SAVEVALUE StateTime1+,p$Time
 TRANSFER ,p$State
 ;---------------------------------------------------------------
@@ -101,35 +90,10 @@ ASSIGN Time,x$LambdaTime20
 ASSIGN ReturnState,ReturnState2Met
 exAdvance2Met SAVEVALUE CorrectStateMet,CorrectState2Met
 SAVEVALUE IsCorrect,True
+SAVEVALUE StateCount2+,1
 TRANSFER ,DevMet
 ReturnState2Met SAVEVALUE IsCorrect,False
 SAVEVALUE StateTime2+,p$Time
-TRANSFER ,p$State
-;---------------------------------------------------------------
-;--Состояние 3-----------------------
-State3Met ASSEMBLE 1
-SAVEVALUE LambdaTime31,(Exponential(1,0,1/Lambda31))
-ASSIGN State,State1Met
-ASSIGN Time,x$LambdaTime31
-ASSIGN ReturnState,ReturnState3Met
-exAdvance3Met SAVEVALUE CorrectStateMet,CorrectState3Met
-SAVEVALUE IsCorrect,True
-TRANSFER ,DevMet
-ReturnState3Met SAVEVALUE IsCorrect,False
-SAVEVALUE StateTime3+,p$Time
-TRANSFER ,p$State
-;---------------------------------------------------------------
-;--Состояние 4-----------------------
-State4Met ASSEMBLE 1
-SAVEVALUE LambdaTime41,(Exponential(1,0,1/Lambda41))
-ASSIGN State,State1Met
-ASSIGN Time,x$LambdaTime41
-ASSIGN ReturnState,ReturnState4Met
-exAdvance4Met SAVEVALUE CorrectStateMet,CorrectState4Met
-SAVEVALUE IsCorrect,True
-TRANSFER ,DevMet
-ReturnState4Met SAVEVALUE IsCorrect,False
-SAVEVALUE StateTime4+,p$Time
 TRANSFER ,p$State
 ;---------------------------------------------------------------
 ;--Устройство--------------------
@@ -139,14 +103,10 @@ RELEASE DEV
 TRANSFER ,p$ReturnState
 ;---------------------------------------------------------------
 ;--Вспомогательный блок--------------------
-CorrectState0Met SAVEVALUE StateTime0+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4))
+CorrectState0Met SAVEVALUE StateTime0+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2))
 TRANSFER ,FinishMet
-CorrectState1Met SAVEVALUE StateTime1+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4))
+CorrectState1Met SAVEVALUE StateTime1+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2))
 TRANSFER ,FinishMet
-CorrectState2Met SAVEVALUE StateTime2+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4))
-TRANSFER ,FinishMet
-CorrectState3Met SAVEVALUE StateTime3+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4))
-TRANSFER ,FinishMet
-CorrectState4Met SAVEVALUE StateTime4+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4))
+CorrectState2Met SAVEVALUE StateTime2+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2))
 TRANSFER ,FinishMet
 ;---------------------------------------------------------------
