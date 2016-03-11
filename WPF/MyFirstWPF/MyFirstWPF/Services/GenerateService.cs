@@ -48,7 +48,7 @@ namespace MyFirstWPF.Services
             {
                 foreach (var relation in node.NodeRelations)
                 {
-                    result.AppendLine(string.Format("Lambda{0}{1} EQU {2}", node.Id, relation.NodeId, relation.Weight.ToString().Replace(",",".")));
+                    result.AppendLine(string.Format("Lambda{0}_{1} EQU {2}", node.Id, relation.NodeId, relation.Weight.ToString().Replace(",",".")));
                 }
             }
 
@@ -74,7 +74,7 @@ namespace MyFirstWPF.Services
             {
                 foreach (var relation in node.NodeRelations)
                 {
-                    result.AppendLine(string.Format("initial x$LambdaTime{0}{1},0 ; время по интенсивности", node.Id, relation.NodeId));
+                    result.AppendLine(string.Format("initial x$LambdaTime{0}_{1},0 ; время по интенсивности", node.Id, relation.NodeId));
                 }
             }
 
@@ -154,7 +154,7 @@ namespace MyFirstWPF.Services
 
             foreach (var relation in node.NodeRelations)
             {
-                result.AppendLine(string.Format("SAVEVALUE LambdaTime{0}{1},(Exponential(1,0,1/Lambda{0}{1}))", node.Id, relation.NodeId));
+                result.AppendLine(string.Format("SAVEVALUE LambdaTime{0}_{1},(Exponential(1,0,1/Lambda{0}_{1}))", node.Id, relation.NodeId));
             }
 
             var firstRelation = node.NodeRelations.FirstOrDefault();
@@ -163,7 +163,7 @@ namespace MyFirstWPF.Services
             if (firstRelation != null)
             {
                 result.AppendLine(string.Format("ASSIGN State,State{0}Met", firstRelation.NodeId));
-                result.AppendLine(string.Format("ASSIGN Time,x$LambdaTime{0}{1}", node.Id, firstRelation.NodeId));
+                result.AppendLine(string.Format("ASSIGN Time,x$LambdaTime{0}_{1}", node.Id, firstRelation.NodeId));
             }
            
             if (node.IsRejectionNode)
@@ -181,15 +181,15 @@ namespace MyFirstWPF.Services
                     {
                         var nextRelation = node.NodeRelations.ElementAt(i + 1);
 
-                        result.AppendLine(string.Format("Advance{0}{1}Met TEST L x$LambdaTime{0}{1},p$Time,Advance{0}{2}Met",node.Id, relation.NodeId, nextRelation.NodeId));
+                        result.AppendLine(string.Format("Advance{0}_{1}Met TEST L x$LambdaTime{0}_{1},p$Time,Advance{0}_{2}Met",node.Id, relation.NodeId, nextRelation.NodeId));
                         result.AppendLine(string.Format("ASSIGN State,State{0}Met", relation.NodeId));
-                        result.AppendLine(string.Format("ASSIGN Time,x$LambdaTime{0}{1}", node.Id, relation.NodeId));
+                        result.AppendLine(string.Format("ASSIGN Time,x$LambdaTime{0}_{1}", node.Id, relation.NodeId));
                     }
                     else
                     {
-                        result.AppendLine(string.Format("Advance{0}{1}Met TEST L x$LambdaTime{0}{1},p$Time,exAdvance{0}Met", node.Id, relation.NodeId));
+                        result.AppendLine(string.Format("Advance{0}_{1}Met TEST L x$LambdaTime{0}_{1},p$Time,exAdvance{0}Met", node.Id, relation.NodeId));
                         result.AppendLine(string.Format("ASSIGN State,State{0}Met", relation.NodeId));
-                        result.AppendLine(string.Format("ASSIGN Time,x$LambdaTime{0}{1}", node.Id, relation.NodeId));
+                        result.AppendLine(string.Format("ASSIGN Time,x$LambdaTime{0}_{1}", node.Id, relation.NodeId));
                     }
                 }
             }

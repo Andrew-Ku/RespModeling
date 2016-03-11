@@ -1,0 +1,345 @@
+;--Инициализирующий блок----------------
+Time EQU 1000000 ; время моелирования
+True EQU 1
+False EQU 0
+Lambda03 EQU 0.04
+Lambda05 EQU 0.08
+Lambda14 EQU 0.1
+Lambda13 EQU 0.04
+Lambda25 EQU 0.08
+Lambda24 EQU 0.1
+Lambda36 EQU 0.08
+Lambda37 EQU 0.1
+Lambda32 EQU 2
+Lambda48 EQU 0.04
+Lambda49 EQU 0.08
+Lambda40 EQU 4
+Lambda510 EQU 0.04
+Lambda511 EQU 0.1
+Lambda51 EQU 1
+Lambda63 EQU 1
+Lambda73 EQU 4
+Lambda84 EQU 1
+Lambda94 EQU 1
+Lambda105 EQU 2
+Lambda115 EQU 4
+
+initial x$workTimeAll,0
+initial x$notWorkTimeAll,0
+initial x$kGotov,0 ; коэффициент готовности
+initial x$CorrectStateMet,0 ;Метка для коррекции
+initial x$IsCorrect,0 ; нужна ли коррекция 
+initial x$kGotov,0 ; коэффициент готовности
+
+initial x$StateTime0,0 ; время в состояние 0
+initial x$StateCount0,0 ; число заходов с состояние 0
+initial x$StateTime1,0 ; время в состояние 1
+initial x$StateCount1,0 ; число заходов с состояние 1
+initial x$StateTime2,0 ; время в состояние 2
+initial x$StateCount2,0 ; число заходов с состояние 2
+initial x$StateTime3,0 ; время в состояние 3
+initial x$StateCount3,0 ; число заходов с состояние 3
+initial x$StateTime4,0 ; время в состояние 4
+initial x$StateCount4,0 ; число заходов с состояние 4
+initial x$StateTime5,0 ; время в состояние 5
+initial x$StateCount5,0 ; число заходов с состояние 5
+initial x$StateTime6,0 ; время в состояние 6
+initial x$StateCount6,0 ; число заходов с состояние 6
+initial x$StateTime7,0 ; время в состояние 7
+initial x$StateCount7,0 ; число заходов с состояние 7
+initial x$StateTime8,0 ; время в состояние 8
+initial x$StateCount8,0 ; число заходов с состояние 8
+initial x$StateTime9,0 ; время в состояние 9
+initial x$StateCount9,0 ; число заходов с состояние 9
+initial x$StateTime10,0 ; время в состояние 10
+initial x$StateCount10,0 ; число заходов с состояние 10
+initial x$StateTime11,0 ; время в состояние 11
+initial x$StateCount11,0 ; число заходов с состояние 11
+
+initial x$LambdaTime03,0 ; время по интенсивности
+initial x$LambdaTime05,0 ; время по интенсивности
+initial x$LambdaTime14,0 ; время по интенсивности
+initial x$LambdaTime13,0 ; время по интенсивности
+initial x$LambdaTime25,0 ; время по интенсивности
+initial x$LambdaTime24,0 ; время по интенсивности
+initial x$LambdaTime36,0 ; время по интенсивности
+initial x$LambdaTime37,0 ; время по интенсивности
+initial x$LambdaTime32,0 ; время по интенсивности
+initial x$LambdaTime48,0 ; время по интенсивности
+initial x$LambdaTime49,0 ; время по интенсивности
+initial x$LambdaTime40,0 ; время по интенсивности
+initial x$LambdaTime510,0 ; время по интенсивности
+initial x$LambdaTime511,0 ; время по интенсивности
+initial x$LambdaTime51,0 ; время по интенсивности
+initial x$LambdaTime63,0 ; время по интенсивности
+initial x$LambdaTime73,0 ; время по интенсивности
+initial x$LambdaTime84,0 ; время по интенсивности
+initial x$LambdaTime94,0 ; время по интенсивности
+initial x$LambdaTime105,0 ; время по интенсивности
+initial x$LambdaTime115,0 ; время по интенсивности
+;---------------------------------------------------------------
+;--Непонятный блок----------------
+START 1
+RMULT 1281
+;---------------------------------------------------------------
+;--Конечный блок--------------------
+GENERATE Time
+TEST E x$IsCorrect,True,FinishMet
+TRANSFER ,x$CorrectStateMet
+FinishMet SAVEVALUE TimeAll,(x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4+x$StateTime5+x$StateTime6+x$StateTime7+x$StateTime8+x$StateTime9+x$StateTime10+x$StateTime11)
+SAVEVALUE notWorkTimeAll,(x$StateTime6+x$StateTime7+x$StateTime8+x$StateTime9+x$StateTime10+x$StateTime11)
+SAVEVALUE workTimeAll,(x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4+x$StateTime5)
+SAVEVALUE prob0,(x$StateTime0/x$TimeAll)
+SAVEVALUE prob1,(x$StateTime1/x$TimeAll)
+SAVEVALUE prob2,(x$StateTime2/x$TimeAll)
+SAVEVALUE prob3,(x$StateTime3/x$TimeAll)
+SAVEVALUE prob4,(x$StateTime4/x$TimeAll)
+SAVEVALUE prob5,(x$StateTime5/x$TimeAll)
+SAVEVALUE prob6,(x$StateTime6/x$TimeAll)
+SAVEVALUE prob7,(x$StateTime7/x$TimeAll)
+SAVEVALUE prob8,(x$StateTime8/x$TimeAll)
+SAVEVALUE prob9,(x$StateTime9/x$TimeAll)
+SAVEVALUE prob10,(x$StateTime10/x$TimeAll)
+SAVEVALUE prob11,(x$StateTime11/x$TimeAll)
+SAVEVALUE kGotov,(x$workTimeAll/(x$notWorkTimeAll+x$workTimeAll))
+SAVEVALUE Tw,(x$workTimeAll/(x$StateCount0+x$StateCount1+x$StateCount2+x$StateCount3+x$StateCount4+x$StateCount5))
+SAVEVALUE Tv,(x$notWorkTimeAll/(x$StateCount6+x$StateCount7+x$StateCount8+x$StateCount9+x$StateCount10+x$StateCount11))
+SAVEVALUE kGotovMid,(x$Tw/(x$Tw+x$Tv))
+TERMINATE 1 
+;--------------------------------------------------------------
+;--Стартовый блок----------------
+GENERATE	,,,1,
+SEIZE DEV
+RELEASE DEV
+TRANSFER ,State0Met
+;---------------------------------------------------------------
+;--Состояние 0-----------------------
+State0Met ASSEMBLE 1
+SAVEVALUE LambdaTime03,(Exponential(1,0,1/Lambda03))
+SAVEVALUE LambdaTime05,(Exponential(1,0,1/Lambda05))
+ASSIGN State,State3Met
+ASSIGN Time,x$LambdaTime03
+Advance05Met TEST L x$LambdaTime05,p$Time,exAdvance0Met
+ASSIGN State,State5Met
+ASSIGN Time,x$LambdaTime05
+exAdvance0Met SAVEVALUE CorrectStateMet,CorrectState0Met
+SAVEVALUE IsCorrect,True
+SAVEVALUE StateCount0+,1
+ADVANCE p$Time
+SAVEVALUE IsCorrect,False
+SAVEVALUE StateTime0+,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 1-----------------------
+State1Met ASSEMBLE 1
+SAVEVALUE LambdaTime14,(Exponential(1,0,1/Lambda14))
+SAVEVALUE LambdaTime13,(Exponential(1,0,1/Lambda13))
+ASSIGN State,State4Met
+ASSIGN Time,x$LambdaTime14
+Advance13Met TEST L x$LambdaTime13,p$Time,exAdvance1Met
+ASSIGN State,State3Met
+ASSIGN Time,x$LambdaTime13
+exAdvance1Met SAVEVALUE CorrectStateMet,CorrectState1Met
+SAVEVALUE IsCorrect,True
+SAVEVALUE StateCount1+,1
+ADVANCE p$Time
+SAVEVALUE IsCorrect,False
+SAVEVALUE StateTime1+,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 2-----------------------
+State2Met ASSEMBLE 1
+SAVEVALUE LambdaTime25,(Exponential(1,0,1/Lambda25))
+SAVEVALUE LambdaTime24,(Exponential(1,0,1/Lambda24))
+ASSIGN State,State5Met
+ASSIGN Time,x$LambdaTime25
+Advance24Met TEST L x$LambdaTime24,p$Time,exAdvance2Met
+ASSIGN State,State4Met
+ASSIGN Time,x$LambdaTime24
+exAdvance2Met SAVEVALUE CorrectStateMet,CorrectState2Met
+SAVEVALUE IsCorrect,True
+SAVEVALUE StateCount2+,1
+ADVANCE p$Time
+SAVEVALUE IsCorrect,False
+SAVEVALUE StateTime2+,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 3-----------------------
+State3Met ASSEMBLE 1
+SAVEVALUE LambdaTime36,(Exponential(1,0,1/Lambda36))
+SAVEVALUE LambdaTime37,(Exponential(1,0,1/Lambda37))
+SAVEVALUE LambdaTime32,(Exponential(1,0,1/Lambda32))
+ASSIGN State,State6Met
+ASSIGN Time,x$LambdaTime36
+Advance37Met TEST L x$LambdaTime37,p$Time,Advance32Met
+ASSIGN State,State7Met
+ASSIGN Time,x$LambdaTime37
+Advance32Met TEST L x$LambdaTime32,p$Time,exAdvance3Met
+ASSIGN State,State2Met
+ASSIGN Time,x$LambdaTime32
+exAdvance3Met SAVEVALUE CorrectStateMet,CorrectState3Met
+SAVEVALUE IsCorrect,True
+SAVEVALUE StateCount3+,1
+ADVANCE p$Time
+SAVEVALUE IsCorrect,False
+SAVEVALUE StateTime3+,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 4-----------------------
+State4Met ASSEMBLE 1
+SAVEVALUE LambdaTime48,(Exponential(1,0,1/Lambda48))
+SAVEVALUE LambdaTime49,(Exponential(1,0,1/Lambda49))
+SAVEVALUE LambdaTime40,(Exponential(1,0,1/Lambda40))
+ASSIGN State,State8Met
+ASSIGN Time,x$LambdaTime48
+Advance49Met TEST L x$LambdaTime49,p$Time,Advance40Met
+ASSIGN State,State9Met
+ASSIGN Time,x$LambdaTime49
+Advance40Met TEST L x$LambdaTime40,p$Time,exAdvance4Met
+ASSIGN State,State0Met
+ASSIGN Time,x$LambdaTime40
+exAdvance4Met SAVEVALUE CorrectStateMet,CorrectState4Met
+SAVEVALUE IsCorrect,True
+SAVEVALUE StateCount4+,1
+ADVANCE p$Time
+SAVEVALUE IsCorrect,False
+SAVEVALUE StateTime4+,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 5-----------------------
+State5Met ASSEMBLE 1
+SAVEVALUE LambdaTime510,(Exponential(1,0,1/Lambda510))
+SAVEVALUE LambdaTime511,(Exponential(1,0,1/Lambda511))
+SAVEVALUE LambdaTime51,(Exponential(1,0,1/Lambda51))
+ASSIGN State,State10Met
+ASSIGN Time,x$LambdaTime510
+Advance511Met TEST L x$LambdaTime511,p$Time,Advance51Met
+ASSIGN State,State11Met
+ASSIGN Time,x$LambdaTime511
+Advance51Met TEST L x$LambdaTime51,p$Time,exAdvance5Met
+ASSIGN State,State1Met
+ASSIGN Time,x$LambdaTime51
+exAdvance5Met SAVEVALUE CorrectStateMet,CorrectState5Met
+SAVEVALUE IsCorrect,True
+SAVEVALUE StateCount5+,1
+ADVANCE p$Time
+SAVEVALUE IsCorrect,False
+SAVEVALUE StateTime5+,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 6-----------------------
+State6Met ASSEMBLE 1
+SAVEVALUE LambdaTime63,(Exponential(1,0,1/Lambda63))
+ASSIGN State,State3Met
+ASSIGN Time,x$LambdaTime63
+ASSIGN ReturnState,ReturnState6Met
+exAdvance6Met SAVEVALUE CorrectStateMet,CorrectState6Met
+SAVEVALUE IsCorrect,True
+SAVEVALUE StateCount6+,1
+TRANSFER ,DevMet
+ReturnState6Met SAVEVALUE IsCorrect,False
+SAVEVALUE StateTime6+,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 7-----------------------
+State7Met ASSEMBLE 1
+SAVEVALUE LambdaTime73,(Exponential(1,0,1/Lambda73))
+ASSIGN State,State3Met
+ASSIGN Time,x$LambdaTime73
+ASSIGN ReturnState,ReturnState7Met
+exAdvance7Met SAVEVALUE CorrectStateMet,CorrectState7Met
+SAVEVALUE IsCorrect,True
+SAVEVALUE StateCount7+,1
+TRANSFER ,DevMet
+ReturnState7Met SAVEVALUE IsCorrect,False
+SAVEVALUE StateTime7+,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 8-----------------------
+State8Met ASSEMBLE 1
+SAVEVALUE LambdaTime84,(Exponential(1,0,1/Lambda84))
+ASSIGN State,State4Met
+ASSIGN Time,x$LambdaTime84
+ASSIGN ReturnState,ReturnState8Met
+exAdvance8Met SAVEVALUE CorrectStateMet,CorrectState8Met
+SAVEVALUE IsCorrect,True
+SAVEVALUE StateCount8+,1
+TRANSFER ,DevMet
+ReturnState8Met SAVEVALUE IsCorrect,False
+SAVEVALUE StateTime8+,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 9-----------------------
+State9Met ASSEMBLE 1
+SAVEVALUE LambdaTime94,(Exponential(1,0,1/Lambda94))
+ASSIGN State,State4Met
+ASSIGN Time,x$LambdaTime94
+ASSIGN ReturnState,ReturnState9Met
+exAdvance9Met SAVEVALUE CorrectStateMet,CorrectState9Met
+SAVEVALUE IsCorrect,True
+SAVEVALUE StateCount9+,1
+TRANSFER ,DevMet
+ReturnState9Met SAVEVALUE IsCorrect,False
+SAVEVALUE StateTime9+,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 10-----------------------
+State10Met ASSEMBLE 1
+SAVEVALUE LambdaTime105,(Exponential(1,0,1/Lambda105))
+ASSIGN State,State5Met
+ASSIGN Time,x$LambdaTime105
+ASSIGN ReturnState,ReturnState10Met
+exAdvance10Met SAVEVALUE CorrectStateMet,CorrectState10Met
+SAVEVALUE IsCorrect,True
+SAVEVALUE StateCount10+,1
+TRANSFER ,DevMet
+ReturnState10Met SAVEVALUE IsCorrect,False
+SAVEVALUE StateTime10+,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 11-----------------------
+State11Met ASSEMBLE 1
+SAVEVALUE LambdaTime115,(Exponential(1,0,1/Lambda115))
+ASSIGN State,State5Met
+ASSIGN Time,x$LambdaTime115
+ASSIGN ReturnState,ReturnState11Met
+exAdvance11Met SAVEVALUE CorrectStateMet,CorrectState11Met
+SAVEVALUE IsCorrect,True
+SAVEVALUE StateCount11+,1
+TRANSFER ,DevMet
+ReturnState11Met SAVEVALUE IsCorrect,False
+SAVEVALUE StateTime11+,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Устройство--------------------
+DevMet SEIZE DEV
+ADVANCE p$Time
+RELEASE DEV
+TRANSFER ,p$ReturnState
+;---------------------------------------------------------------
+;--Вспомогательный блок--------------------
+CorrectState0Met SAVEVALUE StateTime0+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4+x$StateTime5+x$StateTime6+x$StateTime7+x$StateTime8+x$StateTime9+x$StateTime10+x$StateTime11))
+TRANSFER ,FinishMet
+CorrectState1Met SAVEVALUE StateTime1+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4+x$StateTime5+x$StateTime6+x$StateTime7+x$StateTime8+x$StateTime9+x$StateTime10+x$StateTime11))
+TRANSFER ,FinishMet
+CorrectState2Met SAVEVALUE StateTime2+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4+x$StateTime5+x$StateTime6+x$StateTime7+x$StateTime8+x$StateTime9+x$StateTime10+x$StateTime11))
+TRANSFER ,FinishMet
+CorrectState3Met SAVEVALUE StateTime3+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4+x$StateTime5+x$StateTime6+x$StateTime7+x$StateTime8+x$StateTime9+x$StateTime10+x$StateTime11))
+TRANSFER ,FinishMet
+CorrectState4Met SAVEVALUE StateTime4+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4+x$StateTime5+x$StateTime6+x$StateTime7+x$StateTime8+x$StateTime9+x$StateTime10+x$StateTime11))
+TRANSFER ,FinishMet
+CorrectState5Met SAVEVALUE StateTime5+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4+x$StateTime5+x$StateTime6+x$StateTime7+x$StateTime8+x$StateTime9+x$StateTime10+x$StateTime11))
+TRANSFER ,FinishMet
+CorrectState6Met SAVEVALUE StateTime6+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4+x$StateTime5+x$StateTime6+x$StateTime7+x$StateTime8+x$StateTime9+x$StateTime10+x$StateTime11))
+TRANSFER ,FinishMet
+CorrectState7Met SAVEVALUE StateTime7+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4+x$StateTime5+x$StateTime6+x$StateTime7+x$StateTime8+x$StateTime9+x$StateTime10+x$StateTime11))
+TRANSFER ,FinishMet
+CorrectState8Met SAVEVALUE StateTime8+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4+x$StateTime5+x$StateTime6+x$StateTime7+x$StateTime8+x$StateTime9+x$StateTime10+x$StateTime11))
+TRANSFER ,FinishMet
+CorrectState9Met SAVEVALUE StateTime9+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4+x$StateTime5+x$StateTime6+x$StateTime7+x$StateTime8+x$StateTime9+x$StateTime10+x$StateTime11))
+TRANSFER ,FinishMet
+CorrectState10Met SAVEVALUE StateTime10+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4+x$StateTime5+x$StateTime6+x$StateTime7+x$StateTime8+x$StateTime9+x$StateTime10+x$StateTime11))
+TRANSFER ,FinishMet
+CorrectState11Met SAVEVALUE StateTime11+,(Time - (x$StateTime0+x$StateTime1+x$StateTime2+x$StateTime3+x$StateTime4+x$StateTime5+x$StateTime6+x$StateTime7+x$StateTime8+x$StateTime9+x$StateTime10+x$StateTime11))
+TRANSFER ,FinishMet
+;---------------------------------------------------------------
