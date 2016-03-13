@@ -1,0 +1,165 @@
+;--Инициализирующий блок----------------
+Time EQU 1000000 ; время моелирования
+True EQU 1
+False EQU 0
+Lambda0_1 EQU 0.03
+Lambda0_2 EQU 0.0001
+Lambda1_3 EQU 0.0001
+Lambda1_0 EQU 0.1
+Lambda1_4 EQU 0.04
+Lambda2_0 EQU 1
+Lambda3_1 EQU 1
+Lambda4_1 EQU 0.1
+
+NextStateMat MATRIX ,1,2; матрица для хранения времени и следующего состояния
+StateTimeMat MATRIX ,1,6; матрица для хранения времени и следующего состояния
+StateCountMat MATRIX ,1,6; матрица для хранения времени и следующего состояния
+initial x$workTimeAll,0
+initial x$notWorkTimeAll,0
+initial x$kGotov,0 ; коэффициент готовности
+initial x$CorrectStateId,0 ;Метка для коррекции
+initial x$IsCorrect,0 ; нужна ли коррекция 
+initial x$kGotov,0 ; коэффициент готовности
+
+initial x$LambdaTime0_1,0 ; время по интенсивности
+initial x$LambdaTime0_2,0 ; время по интенсивности
+initial x$LambdaTime1_3,0 ; время по интенсивности
+initial x$LambdaTime1_0,0 ; время по интенсивности
+initial x$LambdaTime1_4,0 ; время по интенсивности
+initial x$LambdaTime2_0,0 ; время по интенсивности
+initial x$LambdaTime3_1,0 ; время по интенсивности
+initial x$LambdaTime4_1,0 ; время по интенсивности
+;---------------------------------------------------------------
+;--Непонятный блок----------------
+START 1
+RMULT 1281
+;---------------------------------------------------------------
+;--Конечный блок--------------------
+GENERATE Time
+SAVEVALUE correctTime,(CorrectStateTime(x$CorrectStateId,C1))
+FinishMet SAVEVALUE TimeAll,(MX$StateTimeMat(1,1)+MX$StateTimeMat(1,2)+MX$StateTimeMat(1,3)+MX$StateTimeMat(1,4)+MX$StateTimeMat(1,5)+MX$StateTimeMat(1,6))
+SAVEVALUE notWorkTimeAll,(MX$StateTimeMat(1,3)+MX$StateTimeMat(1,4)+MX$StateTimeMat(1,5))
+SAVEVALUE workTimeAll,(MX$StateTimeMat(1,1)+MX$StateTimeMat(1,2)+MX$StateTimeMat(1,6))
+SAVEVALUE prob0,(MX$StateTimeMat(1,1)/x$TimeAll)
+SAVEVALUE prob1,(MX$StateTimeMat(1,2)/x$TimeAll)
+SAVEVALUE prob2,(MX$StateTimeMat(1,3)/x$TimeAll)
+SAVEVALUE prob3,(MX$StateTimeMat(1,4)/x$TimeAll)
+SAVEVALUE prob4,(MX$StateTimeMat(1,5)/x$TimeAll)
+SAVEVALUE prob5,(MX$StateTimeMat(1,6)/x$TimeAll)
+SAVEVALUE kGotov,(x$workTimeAll/(x$notWorkTimeAll+x$workTimeAll))
+SAVEVALUE Tw,(x$workTimeAll/(MX$StateCountMat(1,1)+MX$StateCountMat(1,2)+MX$StateCountMat(1,6)))
+SAVEVALUE Tv,(x$notWorkTimeAll/(mx$StateCountMat(1,3)+mx$StateCountMat(1,4)+mx$StateCountMat(1,5)))
+SAVEVALUE kGotovMid,(x$Tw/(x$Tw+x$Tv))
+TERMINATE 1 
+;--------------------------------------------------------------
+;--Стартовый блок----------------
+GENERATE	,,,1,
+SEIZE DEV
+RELEASE DEV
+TRANSFER ,State0Met
+;---------------------------------------------------------------
+;--Состояние 0-----------------------
+State0Met SAVEVALUE LambdaTime0_1,(Exponential(1,0,1/Lambda0_1))
+SAVEVALUE LambdaTime0_2,(Exponential(1,0,1/Lambda0_2))
+SAVEVALUE procHelpfulPar,(ChooseWayProc(x$LambdaTime0_1,State1Met,x$LambdaTime0_2,State2Met,999999,999999))
+ASSIGN Time,MX$NextStateMat(1,1)
+ASSIGN State,MX$NextStateMat(1,2)
+SAVEVALUE CorrectStateId,0
+MSAVEVALUE StateCountMat+,1,1,1
+ADVANCE p$Time
+MSAVEVALUE StateTimeMat+,1,1,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 1-----------------------
+State1Met SAVEVALUE LambdaTime1_3,(Exponential(1,0,1/Lambda1_3))
+SAVEVALUE LambdaTime1_0,(Exponential(1,0,1/Lambda1_0))
+SAVEVALUE LambdaTime1_4,(Exponential(1,0,1/Lambda1_4))
+SAVEVALUE procHelpfulPar,(ChooseWayProc(x$LambdaTime1_3,State3Met,x$LambdaTime1_0,State0Met,x$LambdaTime1_4,State4Met))
+ASSIGN Time,MX$NextStateMat(1,1)
+ASSIGN State,MX$NextStateMat(1,2)
+SAVEVALUE CorrectStateId,1
+MSAVEVALUE StateCountMat+,1,2,1
+ADVANCE p$Time
+MSAVEVALUE StateTimeMat+,1,2,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 2-----------------------
+State2Met SAVEVALUE LambdaTime2_0,(Exponential(1,0,1/Lambda2_0))
+ASSIGN ReturnState,ReturnState2Met
+SAVEVALUE procHelpfulPar,(ChooseWayProc(x$LambdaTime2_0,State0Met,999999,999999,999999,999999))
+ASSIGN Time,MX$NextStateMat(1,1)
+ASSIGN State,MX$NextStateMat(1,2)
+SAVEVALUE CorrectStateId,2
+MSAVEVALUE StateCountMat+,1,3,1
+TRANSFER ,DevMet
+ReturnState2Met MSAVEVALUE StateTimeMat+,1,3,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 3-----------------------
+State3Met SAVEVALUE LambdaTime3_1,(Exponential(1,0,1/Lambda3_1))
+ASSIGN ReturnState,ReturnState3Met
+SAVEVALUE procHelpfulPar,(ChooseWayProc(x$LambdaTime3_1,State1Met,999999,999999,999999,999999))
+ASSIGN Time,MX$NextStateMat(1,1)
+ASSIGN State,MX$NextStateMat(1,2)
+SAVEVALUE CorrectStateId,3
+MSAVEVALUE StateCountMat+,1,4,1
+TRANSFER ,DevMet
+ReturnState3Met MSAVEVALUE StateTimeMat+,1,4,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 4-----------------------
+State4Met SAVEVALUE LambdaTime4_1,(Exponential(1,0,1/Lambda4_1))
+ASSIGN ReturnState,ReturnState4Met
+SAVEVALUE procHelpfulPar,(ChooseWayProc(x$LambdaTime4_1,State1Met,999999,999999,999999,999999))
+ASSIGN Time,MX$NextStateMat(1,1)
+ASSIGN State,MX$NextStateMat(1,2)
+SAVEVALUE CorrectStateId,4
+MSAVEVALUE StateCountMat+,1,5,1
+TRANSFER ,DevMet
+ReturnState4Met MSAVEVALUE StateTimeMat+,1,5,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 5-----------------------
+SAVEVALUE procHelpfulPar,(ChooseWayProc(999999,999999,999999,999999,999999,999999))
+ASSIGN Time,MX$NextStateMat(1,1)
+ASSIGN State,MX$NextStateMat(1,2)
+SAVEVALUE CorrectStateId,5
+MSAVEVALUE StateCountMat+,1,6,1
+ADVANCE p$Time
+MSAVEVALUE StateTimeMat+,1,6,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Устройство--------------------
+DevMet SEIZE DEV
+ADVANCE p$Time
+RELEASE DEV
+TRANSFER ,p$ReturnState
+;---------------------------------------------------------------
+;--Блок процедур----------------
+;--Процедура для поиска слудующего состояния ----------------
+PROCEDURE ChooseWayProc(timeArg0,nextStateArg0,timeArg1,nextStateArg1,timeArg2,nextStateArg2)
+BEGIN
+TEMPORARY minTime,nextState;
+minTime = timeArg0; nextState = nextStateArg0;
+IF (minTime>timeArg1) THEN BEGIN minTime = timeArg1; nextState = nextStateArg1; END;
+IF (minTime>timeArg2) THEN BEGIN minTime = timeArg2; nextState = nextStateArg2; END;
+NextStateMat[1,1] = minTime; NextStateMat[1,2] = nextState;
+Return (nextState);
+END;
+;--------------------------------------------------------------
+
+;--Процедура для коррекции времени ----------------
+PROCEDURE CorrectStateTime(currentStateArg, endTimeArg)
+BEGIN
+TEMPORARY countState,result;
+countState = 1;
+sumStateTimes = 0;
+WHILE (countState <= 6) DO BEGIN
+sumStateTimes = sumStateTimes + StateTimeMat[1,countState];
+countState = countState+1;
+END;
+StateTimeMat[1, currentStateArg + 1] = StateTimeMat[1, currentStateArg + 1] + endTimeArg-sumStateTimes;
+ Return(StateTimeMat[1, currentStateArg + 1]);
+END;
+;--------------------------------------------------------------
+
