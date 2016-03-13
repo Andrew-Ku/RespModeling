@@ -12,9 +12,12 @@ namespace MyFirstWPF.Services
 {
     public class GenerateService
     {
+        private static int maxRelationCount;
         public static void GenerateGpssFile(GpssInputModel model, string path)
         {
             var result = new StringBuilder();
+            maxRelationCount = model.Nodes.Max(n => n.NodeRelations.Count);
+
             result.Append(GetInitializationBlock(model));
             result.Append(GetInfoBlock());
             result.Append(GetFinishBlock(model));
@@ -24,15 +27,15 @@ namespace MyFirstWPF.Services
             {
                 result.Append(GetStateBlock(node));
             }
-            
+
             result.Append(GetDeviceBlock());
             result.Append(GetHelpfulBlock(model));
-
+            result.Append(GetProcedureBlock(model));
 
             File.WriteAllText(path, result.ToString());
 
             Process.Start(path);
-        
+
         }
 
         // Формируем блок инициализации
@@ -48,12 +51,12 @@ namespace MyFirstWPF.Services
             {
                 foreach (var relation in node.NodeRelations)
                 {
-                    result.AppendLine(string.Format("Lambda{0}_{1} EQU {2}", node.Id, relation.NodeId, relation.Weight.ToString().Replace(",",".")));
+                    result.AppendLine(string.Format("Lambda{0}_{1} EQU {2}", node.Id, relation.NodeId, relation.Weight.ToString().Replace(",", ".")));
                 }
             }
 
             result.AppendLine("");
-
+            result.AppendLine("TimeStateMat MATRIX ,1,2; матрица для хранения времени и следующего состояния");
             result.AppendLine("initial x$workTimeAll,0");
             result.AppendLine("initial x$notWorkTimeAll,0");
             result.AppendLine("initial x$kGotov,0 ; коэффициент готовности");
@@ -100,7 +103,7 @@ namespace MyFirstWPF.Services
         {
             var result = new StringBuilder();
             result.AppendLine(";--Непонятный блок----------------");
-          
+
             result.AppendLine("START 1");
             result.AppendLine("RMULT 1281");
 
@@ -137,10 +140,10 @@ namespace MyFirstWPF.Services
 
             foreach (var node in model.Nodes)
             {
-                result.AppendLine(string.Format("CorrectState{0}Met SAVEVALUE StateTime{0}+,(Time - ({1}))", node.Id,sumString));
+                result.AppendLine(string.Format("CorrectState{0}Met SAVEVALUE StateTime{0}+,(Time - ({1}))", node.Id, sumString));
                 result.AppendLine(string.Format("TRANSFER ,FinishMet"));
             }
-         
+
             result.AppendLine(";---------------------------------------------------------------");
 
             return result.ToString();
@@ -150,58 +153,65 @@ namespace MyFirstWPF.Services
         {
             var result = new StringBuilder();
             result.AppendLine(string.Format(";--Состояние {0}-----------------------", node.Id));
-            result.AppendLine(string.Format("State{0}Met ASSEMBLE 1", node.Id));
+          //  result.AppendLine(string.Format("State{0}Met ASSEMBLE 1", node.Id));
 
             foreach (var relation in node.NodeRelations)
             {
-                result.AppendLine(string.Format("SAVEVALUE LambdaTime{0}_{1},(Exponential(1,0,1/Lambda{0}_{1}))", node.Id, relation.NodeId));
+                if (relation.Equals(node.NodeRelations.First()))
+                {
+                    result.AppendLine(string.Format("State{0}Met SAVEVALUE LambdaTime{0}_{1},(Exponential(1,0,1/Lambda{0}_{1}))", node.Id, relation.NodeId));
+                }
+                else
+                {
+                    result.AppendLine(string.Format("SAVEVALUE LambdaTime{0}_{1},(Exponential(1,0,1/Lambda{0}_{1}))", node.Id, relation.NodeId));
+                }
+                
             }
 
             var firstRelation = node.NodeRelations.FirstOrDefault();
             var relationCount = node.NodeRelations.Count();
 
-            if (firstRelation != null)
-            {
-                result.AppendLine(string.Format("ASSIGN State,State{0}Met", firstRelation.NodeId));
-                result.AppendLine(string.Format("ASSIGN Time,x$LambdaTime{0}_{1}", node.Id, firstRelation.NodeId));
-            }
-           
+            //if (firstRelation != null)
+            //{
+            //    result.AppendLine(string.Format("ASSIGN State,State{0}Met", firstRelation.NodeId));
+            //    result.AppendLine(string.Format("ASSIGN Time,x$LambdaTime{0}_{1}", node.Id, firstRelation.NodeId));
+            //}
+
             if (node.IsRejectionNode)
             {
                 result.AppendLine(string.Format("ASSIGN ReturnState,ReturnState{0}Met", node.Id));
             }
 
-            if (relationCount > 1)
+
+            var procArgs = new StringBuilder();
+
+
+            for (var i = 0; i < maxRelationCount; i++)
             {
-                for (var i = 1; i < relationCount; i++)
+                if (i < relationCount)
                 {
                     var relation = node.NodeRelations.ElementAt(i);
-
-                    if (i != relationCount - 1)
-                    {
-                        var nextRelation = node.NodeRelations.ElementAt(i + 1);
-
-                        result.AppendLine(string.Format("Advance{0}_{1}Met TEST L x$LambdaTime{0}_{1},p$Time,Advance{0}_{2}Met",node.Id, relation.NodeId, nextRelation.NodeId));
-                        result.AppendLine(string.Format("ASSIGN State,State{0}Met", relation.NodeId));
-                        result.AppendLine(string.Format("ASSIGN Time,x$LambdaTime{0}_{1}", node.Id, relation.NodeId));
-                    }
-                    else
-                    {
-                        result.AppendLine(string.Format("Advance{0}_{1}Met TEST L x$LambdaTime{0}_{1},p$Time,exAdvance{0}Met", node.Id, relation.NodeId));
-                        result.AppendLine(string.Format("ASSIGN State,State{0}Met", relation.NodeId));
-                        result.AppendLine(string.Format("ASSIGN Time,x$LambdaTime{0}_{1}", node.Id, relation.NodeId));
-                    }
+                    procArgs.Append(string.Format("x$LambdaTime{0}_{1},State{1}Met,", node.Id, relation.NodeId));
+                }
+                else
+                {
+                    procArgs.Append(string.Format("{0},{1},", 999999, 999999));
                 }
             }
 
-            result.AppendLine(string.Format("exAdvance{0}Met SAVEVALUE CorrectStateMet,CorrectState{0}Met", node.Id));
-            result.AppendLine(string.Format("SAVEVALUE IsCorrect,True"));
+
+            result.AppendLine(string.Format("SAVEVALUE procHelpfulPar,(ChooseWayProc({0}))", procArgs.Remove(procArgs.Length - 1, 1)));
+            result.AppendLine(string.Format("ASSIGN Time,MX$TimeStateMat(1,1)"));
+            result.AppendLine(string.Format("ASSIGN State,MX$TimeStateMat(1,2)"));
+
+            result.AppendLine(string.Format("SAVEVALUE CorrectStateMet,CorrectState{0}Met", node.Id));
+           // result.AppendLine(string.Format("SAVEVALUE IsCorrect,True"));
             result.AppendLine(string.Format("SAVEVALUE StateCount{0}+,1", node.Id));
 
             result.AppendLine(node.IsRejectionNode ? string.Format("TRANSFER ,DevMet") : string.Format("ADVANCE p$Time"));
-            result.AppendLine(node.IsRejectionNode ? string.Format("ReturnState{0}Met SAVEVALUE IsCorrect,False",node.Id) : string.Format("SAVEVALUE IsCorrect,False"));
-            result.AppendLine(string.Format("SAVEVALUE StateTime{0}+,p$Time", node.Id));
-            
+          //  result.AppendLine(node.IsRejectionNode ? string.Format("ReturnState{0}Met SAVEVALUE IsCorrect,False", node.Id) : string.Format("SAVEVALUE IsCorrect,False"));
+            result.AppendLine(node.IsRejectionNode ? string.Format("ReturnState{0}Met SAVEVALUE StateTime{0}+,p$Time", node.Id) : string.Format("SAVEVALUE StateTime{0}+,p$Time",node.Id));
+          
             result.AppendLine(string.Format("TRANSFER ,p$State"));
             result.AppendLine(";---------------------------------------------------------------");
 
@@ -221,13 +231,13 @@ namespace MyFirstWPF.Services
             }
             sumString.Remove(sumString.Length - 1, 1);
 
-            foreach (var node in model.Nodes.Where(n=>!n.IsRejectionNode))
+            foreach (var node in model.Nodes.Where(n => !n.IsRejectionNode))
             {
                 sumWork.Append(string.Format("x$StateTime{0}+", node.Id));
             }
             sumWork.Remove(sumWork.Length - 1, 1);
 
-            foreach (var node in model.Nodes.Where(n=>n.IsRejectionNode))
+            foreach (var node in model.Nodes.Where(n => n.IsRejectionNode))
             {
                 sumNotWork.Append(string.Format("x$StateTime{0}+", node.Id));
             }
@@ -235,7 +245,7 @@ namespace MyFirstWPF.Services
 
             result.AppendLine(";--Конечный блок--------------------");
             result.AppendLine(string.Format("GENERATE Time"));
-            result.AppendLine(string.Format("TEST E x$IsCorrect,True,FinishMet"));
+           // result.AppendLine(string.Format("TEST E x$IsCorrect,True,FinishMet"));
             result.AppendLine(string.Format("TRANSFER ,x$CorrectStateMet"));
             result.AppendLine(string.Format("FinishMet SAVEVALUE TimeAll,({0})", sumString));
             result.AppendLine(string.Format("SAVEVALUE notWorkTimeAll,({0})", sumNotWork));
@@ -249,7 +259,7 @@ namespace MyFirstWPF.Services
             result.AppendLine(string.Format("SAVEVALUE kGotov,(x$workTimeAll/(x$notWorkTimeAll+x$workTimeAll))"));
 
             var sumCountWork = new StringBuilder();
-            foreach (var node in model.Nodes.Where(n=>!n.IsRejectionNode))
+            foreach (var node in model.Nodes.Where(n => !n.IsRejectionNode))
             {
                 sumCountWork.Append(string.Format("x$StateCount{0}+", node.Id));
             }
@@ -274,5 +284,37 @@ namespace MyFirstWPF.Services
 
             return result.ToString();
         }
+
+        private static string GetProcedureBlock(GpssInputModel model)
+        {
+            var result = new StringBuilder();
+            result.AppendLine(";--Блок процедур----------------");
+            result.AppendLine(";--Процедура для поиска слудующего состояния ----------------");
+
+            var procArgs = new StringBuilder();
+            for (var i = 0; i < maxRelationCount; i++)
+            {
+               procArgs.Append(string.Format("timeArg{0},nextStateArg{0},", i));
+               
+            }
+
+            result.AppendLine(string.Format("PROCEDURE ChooseWayProc({0})", procArgs.Remove(procArgs.Length - 1, 1)));
+            result.AppendLine(string.Format("BEGIN"));
+            result.AppendLine(string.Format("TEMPORARY minTime,nextState;"));
+            result.AppendLine(string.Format("minTime = timeArg0; nextState = nextStateArg0;"));
+
+            for (var i = 1; i < maxRelationCount; i++)
+            {
+                result.AppendLine(string.Format("IF (minTime>timeArg{0}) THEN BEGIN minTime = timeArg{0}; nextState = nextStateArg{0}; END;", i));
+
+            }
+            result.AppendLine(string.Format("TimeStateMat[1,1] = minTime; TimeStateMat[1,2] = nextState;"));
+            result.AppendLine(string.Format("Return (nextState);"));
+            result.AppendLine(string.Format("END;"));
+            result.AppendLine(";--------------------------------------------------------------");
+
+            return result.ToString();
+        }
+        
     }
 }
