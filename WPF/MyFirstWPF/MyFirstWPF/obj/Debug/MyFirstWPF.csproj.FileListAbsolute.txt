@@ -51,3 +51,5 @@ C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\StartGpssWindow.baml
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\StartGpssWindow.g.cs
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\StartGpssWindow.baml
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\StartGpssWindow.g.cs
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF_MarkupCompile.lref
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\GeneratedInternalTypeHelper.g.cs

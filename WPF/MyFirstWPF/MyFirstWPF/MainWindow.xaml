@@ -1,105 +1,157 @@
-﻿<Window x:Class="MyFirstWPF.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Пример компоновки" Height="auto"
+        x:Class="MyFirstWPF.MainWindow"
+        xmlns:local="clr-namespace:MyFirstWPF.Models"
+        xmlns:validation="clr-namespace:MyFirstWPF.Validation"
+        xmlns:toolkit="http://schemas.microsoft.com/wpf/2008/toolkit"
+        Title="" Height="auto"
         WindowState="Maximized">
+
+    <Window.Resources>
+        <Style TargetType="{x:Type DataGridRow}">
+            <Setter Property="ValidationErrorTemplate">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Image Source="Images/Denide.jpg"
+                   ToolTip="{Binding RelativeSource={
+                                         RelativeSource FindAncestor,
+                                         AncestorType={x:Type DataGridRow}},
+                                     Path=(Validation.Errors)[0].ErrorContent}"
+                   Margin="0"
+                   Width="11" Height="11" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
-        <DockPanel MinHeight="50" MinWidth="50" LastChildFill="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="1" Grid.Row="0" Grid.RowSpan="1" Margin="10,10,22,21" Width="NaN" Height="NaN" Name="dockPanel1">
+        <DockPanel MinHeight="50" MinWidth="50" LastChildFill="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="1" Grid.Row="0" Grid.RowSpan="1" Margin="10,10,22,21" Width="NaN" Height="NaN" x:Name="dockPanel1">
             <ToolBarTray DockPanel.Dock="Top">
                 <ToolBar>
-                    <Button Name="NewButton" Click="NewButton_OnClick">New</Button>
-                    <Button Name="OpenButton" Click="OpenButton_OnClick">Open</Button>
-                    <Button Name="SaveButton" Click="SaveButton_OnClick">Save</Button>
-                    <Button>Help</Button>
+                    <Button x:Name="NewButton" Click="NewButton_OnClick" Content="New"/>
+                    <Button x:Name="OpenButton" Click="OpenButton_OnClick" Content="Open"/>
+                    <Button x:Name="SaveButton" Click="SaveButton_OnClick" Content="Save"/>
+                    <Button Content="Help"/>
                 </ToolBar>
             </ToolBarTray>
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" MinWidth="140" Background="Beige">
-                <Label Name="MoveXPosLabel" Content="X" MinWidth="30" HorizontalContentAlignment="Right"/>
-                <Label Name="MoveYPosLabel" Content="Y" MinWidth="30" HorizontalContentAlignment="Right"/>
+                <Label x:Name="MoveXPosLabel" Content="X" MinWidth="30" HorizontalContentAlignment="Right"/>
+                <Label x:Name="MoveYPosLabel" Content="Y" MinWidth="30" HorizontalContentAlignment="Right"/>
             </StackPanel>
-            <StackPanel DockPanel.Dock="Left" Orientation="Vertical" MinWidth="150" Background="WhiteSmoke" >
+            <StackPanel DockPanel.Dock="Left" Orientation="Vertical" MinWidth="150" Background="WhiteSmoke" Width="86" >
                 <Label Content="Режимы:"/>
-                <RadioButton Name="CreateModeRadioButton" Content="Режим создания" IsChecked="True" Checked="ModeRadioButton_Checked"/>
-                <RadioButton Name="EditModeRadioButton"  Content="Редактирование" Checked="ModeRadioButton_Checked"/>
-                <Grid Name="EditNodeGrid" Visibility="Collapsed">
+                <RadioButton x:Name="CreateModeRadioButton" Content="Режим создания" IsChecked="True" Checked="ModeRadioButton_Checked"/>
+                <RadioButton x:Name="EditModeRadioButton"  Content="Редактирование" Checked="ModeRadioButton_Checked"/>
+              
+
+                <Grid x:Name="EditNodeGrid" Visibility="Collapsed">
                     <Grid.RowDefinitions>
-                        <RowDefinition ></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
+                        <RowDefinition />
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition ></ColumnDefinition>
-                        <ColumnDefinition ></ColumnDefinition>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
                     </Grid.ColumnDefinitions>
+                    <Label Content="Номер узла:" HorizontalContentAlignment="Right"/>
+                    <TextBox Grid.Row="0" x:Name="NodeNumberTextBox" PreviewTextInput="NodeNumberValidation" Height="22" 
+						VerticalAlignment="Bottom"
+						MaxLength="2"
+						Margin="5,1,5,1"
+						Grid.Column="1"/>
+                    <CheckBox   Grid.Column="0" Grid.Row="1" x:Name="StartNodeCheckBox"  Content="Стартовый узел"/>
 
-                    <Label Content="Номер узла:" HorizontalContentAlignment="Right"></Label>
-                    <TextBox Grid.Row="0" Name="NodeNumberTextBox" PreviewTextInput="NodeNumberValidation" Height="22" 
-                             VerticalAlignment="Bottom"
-                             MaxLength="2"
-                             Margin="5,1,5,1"
-                             Grid.Column="1"/>
-                    <CheckBox   Grid.Column="0" Grid.Row="1" Name="StartNodeCheckBox"  Content="Стартовый узел"/>
-
-                    <CheckBox Grid.Row="2" Name="RejectionNodeCheckBox" Grid.Column="0" Content="Отказной узел"/>
-                    <Button Grid.Row="3" Grid.Column="0" Margin="5,1,2,1" Click="SaveEditNodeButton_OnClick">Сохранить</Button>
-                    <Button Grid.Row="3" Grid.Column="1" Margin="2,1,5,1">Вернуть</Button>
-
-
+                    <CheckBox Grid.Row="2" x:Name="RejectionNodeCheckBox" Grid.Column="0" Content="Отказной узел"/>
+                    <Button Grid.Row="3" Grid.Column="0" Margin="5,1,2,1" Click="SaveEditNodeButton_OnClick" Content="Сохранить"/>
+                    <Button Grid.Row="3" Grid.Column="1" Margin="2,1,5,1" Content="Вернуть"/>
                 </Grid>
 
-                <Grid Name="EditEdgeGrid" Visibility="Collapsed">
+                <DataGrid 
+                    Name="NodeRelationDataGrid"     
+                    ItemsSource="{x:Array local:NodeRelation}"
+                    AutoGenerateColumns="False"
+                    Visibility="Collapsed"
+                    RowHeaderWidth="16"
+                    Height="100"
+                    HorizontalScrollBarVisibility="Disabled"
+                    CanUserAddRows="False"
+                    VerticalScrollBarVisibility="Auto">
+                    <DataGrid.Columns >
+                        <DataGridTextColumn 
+                            Width="70"
+                            Header="Состояние" 
+                            Binding="{Binding Path=NodeId}"
+                            IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Вес" Width="80">
+                            <DataGridTextColumn.Binding>
+                                <Binding Path="Weight">
+                                    <Binding.ValidationRules>
+                                        <validation:WeightValidationRule />
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </DataGridTextColumn.Binding>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <Grid x:Name="EditEdgeGrid" Visibility="Collapsed">
                     <Grid.RowDefinitions>
-                        <RowDefinition ></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
+                        <RowDefinition />
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
 
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition ></ColumnDefinition>
-                        <ColumnDefinition ></ColumnDefinition>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
                     </Grid.ColumnDefinitions>
 
-                    <Label   Grid.Row="0" Grid.Column="0" Content="Ребро:" HorizontalContentAlignment="Right"></Label>
-                    <Label Name="EdgeEditLabel1" Grid.Row="1" Grid.Column="0"  HorizontalContentAlignment="Right"></Label>
-                    <TextBox Grid.Row="1" Grid.Column="1"  Name="EdgeLambdaTextBox1" PreviewKeyDown="EdgeLambdaValidation" Height="22" 
-                             VerticalAlignment="Bottom"
-                             Margin="5,1,5,1"/>
-                    <Label Name="EdgeEditLabel2" Grid.Row="2" Grid.Column="0"  HorizontalContentAlignment="Right"></Label>
-                    <TextBox Grid.Row="2" Grid.Column="1"  Name="EdgeLambdaTextBox2" PreviewKeyDown="EdgeLambdaValidation" Height="22" 
-                             VerticalAlignment="Bottom"
+                    <Label   Grid.Row="0" Grid.Column="0" Content="Ребро:" HorizontalContentAlignment="Right"/>
+                    <Label x:Name="EdgeEditLabel1" Grid.Row="1" Grid.Column="0"  HorizontalContentAlignment="Right"/>
+                    <TextBox Grid.Row="1" Grid.Column="1"  x:Name="EdgeLambdaTextBox1"  Height="22" 
+						VerticalAlignment="Bottom" PreviewKeyDown="EdgeLambdaValidation"
+						Margin="5,1,5,1"/>
+                    <Label x:Name="EdgeEditLabel2" Grid.Row="2" Grid.Column="0"  HorizontalContentAlignment="Right"/>
+                    <TextBox Grid.Row="2" Grid.Column="1"  x:Name="EdgeLambdaTextBox2"  Height="22" 
+						VerticalAlignment="Bottom"
+                            PreviewKeyDown="EdgeLambdaValidation"
                             
-                             Margin="5,1,5,1"/>
+						Margin="5,1,5,1"/>
 
 
 
-                    <Button Name="SaveEditEdgeButton" Grid.Row="3" Grid.Column="0" Margin="5,1,2,1" Click="SaveEditEdgeButton_OnClick">Сохранить</Button>
+                    <Button x:Name="SaveEditEdgeButton" Grid.Row="3" Grid.Column="0" Margin="5,1,2,1" Click="SaveEditEdgeButton_OnClick" Content="Сохранить"/>
 
 
 
                 </Grid>
             </StackPanel>
-            <StackPanel Name="RightStackPanel"  DockPanel.Dock="Right" Orientation="Vertical" MinWidth="140" Background="WhiteSmoke" HorizontalAlignment="Right">
+            <StackPanel x:Name="RightStackPanel"  DockPanel.Dock="Right" Orientation="Vertical" MinWidth="140" Background="WhiteSmoke" HorizontalAlignment="Right">
 
                 <Grid Height="100">
                     <Grid.RowDefinitions>
-                        <RowDefinition ></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
+                        <RowDefinition />
+                        <RowDefinition/>
+                        <RowDefinition/>
 
 
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition ></ColumnDefinition>
-                        <ColumnDefinition ></ColumnDefinition>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
                     </Grid.ColumnDefinitions>
 
-                    <Label   Grid.Row="0" Grid.Column="0" Content="Время моделирования:" HorizontalContentAlignment="Right"></Label>
-                    <Label   Grid.Row="1" Grid.Column="0" Content="Время наблюдения:" HorizontalContentAlignment="Right"></Label>
-                    <Label Name="ModelingTimeLabel"   Grid.Row="0" Grid.Column="1" Content="" HorizontalContentAlignment="Left"></Label>
-                    <Label Name="ObservationTomeLabel"  Grid.Row="1" Grid.Column="1" Content="" HorizontalContentAlignment="Left"></Label>
-                    <Button Grid.Row="2" Name="GenerateButton"  Margin="12,58,0,-157" Click="GenerateButton_OnClick">Генерация</Button>
+                    <Label   Grid.Row="0" Grid.Column="0" Content="Кол. состояний:" HorizontalContentAlignment="Right"/>
+                    <Label   Grid.Row="1" Grid.Column="0" Content="Кол. связей:" HorizontalContentAlignment="Right"/>
+
+                    <Label x:Name="StateCountLabel"   Grid.Row="0" Grid.Column="1" Content="" HorizontalContentAlignment="Left"/>
+                    <Label x:Name="EdgeCountLabel"  Grid.Row="1" Grid.Column="1" Content="" HorizontalContentAlignment="Left"/>
+                    <Button Grid.Row="2" x:Name="GenerateButton"  Margin="12,58,9,-157" Click="GenerateButton_OnClick" Content="Генерация" Grid.ColumnSpan="2"/>
                 </Grid>
 
 
@@ -107,16 +159,16 @@
 
             </StackPanel>
             <Border Width="auto" Height="auto" BorderBrush="DarkSlateGray" BorderThickness="1">
-                <Canvas Name="WorkPlaceCanvas" 
-                        Background="Azure" 
-                        MouseLeftButtonDown="WorkPlaceCanvas_MouseLeftButtonDown" 
-                        MouseRightButtonDown="WorkPlaceCanvas_MouseRightButtonDown"
-                        MouseMove="WorkPlaceCanvas_MouseMove"
-                        MouseWheel="WorkPlaceCanvas_OnMouseWheel">
-
-                </Canvas>
+                <Canvas x:Name="WorkPlaceCanvas" 
+					Background="Azure" 
+					MouseLeftButtonDown="WorkPlaceCanvas_MouseLeftButtonDown" 
+					MouseRightButtonDown="WorkPlaceCanvas_MouseRightButtonDown"
+					MouseMove="WorkPlaceCanvas_MouseMove"
+					MouseWheel="WorkPlaceCanvas_OnMouseWheel"/>
             </Border>
         </DockPanel>
     </Grid>
+
+
 </Window>
 

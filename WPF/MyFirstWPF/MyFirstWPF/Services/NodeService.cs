@@ -31,10 +31,10 @@ namespace MyFirstWPF.Services
             var newPoint1 = new Point();
             var newPoint2 =new Point();
            
-            double sin1 = 0.0;
-            double sin2 = 0.0;
-            double cos1 = 0.0;
-            double cos2 = 0.0;
+            var sin1 = 0.0;
+            var sin2 = 0.0;
+            var cos1 = 0.0;
+            var cos2 = 0.0;
             var arrowLineLenght = VectorLen(point1, point2);
 
 

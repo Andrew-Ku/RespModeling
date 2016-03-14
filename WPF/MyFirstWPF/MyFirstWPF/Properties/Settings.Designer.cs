@@ -30,5 +30,29 @@ namespace MyFirstWPF.Properties {
                 return ((global::MyFirstWPF.MainWindow)(this["WindowSetting"]));
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastOpenFile {
+            get {
+                return ((string)(this["LastOpenFile"]));
+            }
+            set {
+                this["LastOpenFile"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastSaveFile {
+            get {
+                return ((string)(this["LastSaveFile"]));
+            }
+            set {
+                this["LastSaveFile"] = value;
+            }
+        }
     }
 }

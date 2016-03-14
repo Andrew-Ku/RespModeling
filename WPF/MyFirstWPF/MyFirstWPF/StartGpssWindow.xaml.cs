@@ -17,6 +17,7 @@ using Microsoft.Win32;
 using MyFirstWPF.Models;
 using MyFirstWPF.Models.Generation;
 using MyFirstWPF.Services;
+using Path = System.IO.Path;
 
 namespace MyFirstWPF
 {
@@ -26,11 +27,12 @@ namespace MyFirstWPF
     public partial class StartGpssWindow : Window
     {
         private readonly List<Node> NodeList;
+        private readonly string GpssFilesPath;
 
         public StartGpssWindow(List<Node> nodeList)
         {
             NodeList = nodeList;
-
+            GpssFilesPath = Path.Combine(Environment.CurrentDirectory, "GPSS");
             InitializeComponent();
         }
 
@@ -52,16 +54,16 @@ namespace MyFirstWPF
             var observationTime = int.Parse(string.Concat(ModelingTimeTextBox.Text.SkipWhile(s => s == '0')));
 
 
-            if (!Directory.Exists(Environment.CurrentDirectory + "\\GPSS"))
+            if (!Directory.Exists(GpssFilesPath))
             {
-                Directory.CreateDirectory(Environment.CurrentDirectory + "\\GPSS");
+                Directory.CreateDirectory(GpssFilesPath);
             }
 
             var saveDialog = new SaveFileDialog
          {
              DefaultExt = ".txt",
              Filter = "Text documents (.txt)|*.txt",
-             InitialDirectory = Environment.CurrentDirectory + "\\GPSS"
+             InitialDirectory = GpssFilesPath
          };
 
             var result = saveDialog.ShowDialog();

@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using AutoMapper;
@@ -30,6 +33,8 @@ namespace MyFirstWPF
         private readonly NodeService _nodeService;
         private readonly FileService _fileService;
 
+        private readonly string JsonFilesPath;
+
         public List<NodeVm> NodeVmList;
         public List<EdgeVm> EdgeVmList;
         public List<Node> NodeList;
@@ -51,6 +56,11 @@ namespace MyFirstWPF
             NodeRadius = StartParameters.NodeRadius;
             EdgeVmList = new List<EdgeVm>();
             MoveFlag = false;
+            JsonFilesPath = Path.Combine(Environment.CurrentDirectory, "Json");
+
+            Properties.Settings.Default.LastSaveFile = "";
+            Properties.Settings.Default.LastOpenFile = "";
+            Properties.Settings.Default.Save();
 
             InitializeComponent();
         }
@@ -118,6 +128,7 @@ namespace MyFirstWPF
                 NodeService.SetNodeVmColor(ref nodeVm, border: NodeColors.NormalBorder);
 
                 WorkPlaceCanvas.Children.Add(nodeVm.TextBlock);
+                UpdateModelInfo();
             }
             e.Handled = true;
 
@@ -190,7 +201,8 @@ namespace MyFirstWPF
                         });
 
 
-                        NodeService.SetNodeVmColor(ref StartNodeVmEdge,true);
+                        NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
+                        UpdateModelInfo();
                         return;
                     }
 
@@ -241,6 +253,7 @@ namespace MyFirstWPF
                     WorkPlaceCanvas.Children.Add(edgeVm.ArrowLine);
                     //WorkPlaceCanvas.Children.Add(edgeVm.FromWeightLabel);
                     NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
+                    UpdateModelInfo();
                 }
 
             }
@@ -287,6 +300,8 @@ namespace MyFirstWPF
                     StartNodeCheckBox.IsEnabled = true;
                     RejectionNodeCheckBox.IsEnabled = true;
                 }
+
+                FillDataGrid(EditNodeVm.Node.NodeRelations);
             }
 
             e.Handled = true;
@@ -402,7 +417,18 @@ namespace MyFirstWPF
                 MessageBox.Show("Отсутсвует модель для генерации");
                 return;
             }
-            var genWindow = new StartGpssWindow(NodeList);
+
+            var relationNodes = NodeList.SelectMany(n => n.NodeRelations).Select(r => r.NodeId).ToList();
+            if (NodeList.Any(node => !relationNodes.Contains(node.Id) && !node.NodeRelations.Any()))
+            {
+                MessageBox.Show("Все состояния должны иметь связи");
+                return;
+            }
+
+            var genWindow = new StartGpssWindow(NodeList)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterScreen
+            };
             genWindow.ShowDialog();
 
         }
@@ -493,10 +519,18 @@ namespace MyFirstWPF
         {
             if (EditNodeVm == null) return;
 
+            var regex = new Regex("[^0-9]+");
+            if (regex.IsMatch(NodeNumberTextBox.Text))
+            {
+                MessageBox.Show("Некорректный номер узла");
+                return;
+            }
+
             if (NodeNumberTextBox.Text.Length == 2 && NodeNumberTextBox.Text.StartsWith("0"))
             {
                 NodeNumberTextBox.Text = NodeNumberTextBox.Text.Substring(1);
             }
+
             var number = int.Parse(NodeNumberTextBox.Text);
 
             if (NodeList.Any(n => n.Id == number) && number != EditNodeVm.Node.Id)
@@ -531,11 +565,21 @@ namespace MyFirstWPF
 
         private void OpenButton_OnClick(object sender, RoutedEventArgs e)
         {
+            var lastOpenFile = Properties.Settings.Default.LastOpenFile;
+
+            if (!File.Exists(Path.Combine(JsonFilesPath, lastOpenFile)))
+            {
+                lastOpenFile = "";
+                Properties.Settings.Default.LastOpenFile = "";
+                Properties.Settings.Default.Save();
+            }
+
             var fileDialog = new OpenFileDialog
             {
                 DefaultExt = ".json",
                 Filter = " (.json)|*.json",
-                InitialDirectory = Environment.CurrentDirectory + "\\Json"
+                InitialDirectory = JsonFilesPath,
+                FileName = lastOpenFile != string.Empty ? lastOpenFile : ""
             };
 
             if (fileDialog.ShowDialog().GetValueOrDefault())
@@ -604,12 +648,22 @@ namespace MyFirstWPF
                     EdgeVmList.Add(edgeVm);
                     WorkPlaceCanvas.Children.Add(edgeVm.ArrowLine);
                 }
+
+                Properties.Settings.Default.LastOpenFile = fileDialog.SafeFileName;
+                Properties.Settings.Default.LastSaveFile = lastOpenFile;
+                Properties.Settings.Default.Save();
+
+                this.Title = fileDialog.FileName;
+                UpdateModelInfo();
+
             }
         }
 
         private void SaveButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (!NodeList.Any()) return;
+
+            var lastSaveFile = Properties.Settings.Default.LastSaveFile;
 
             var modelState = new ModelStateSave()
             {
@@ -632,10 +686,11 @@ namespace MyFirstWPF
 
             var saveDialog = new SaveFileDialog
            {
-               FileName = "Document",
+               FileName = lastSaveFile,
                DefaultExt = ".json",
                Filter = "Text documents (.json)|*.json",
-               InitialDirectory = Environment.CurrentDirectory + "\\Json"
+               InitialDirectory = JsonFilesPath,
+               OverwritePrompt = false
            };
 
             var result = saveDialog.ShowDialog();
@@ -661,22 +716,42 @@ namespace MyFirstWPF
         {
             var ch = ForGetChar.GetCharFromKey(e.Key);
             var textBox = sender as TextBox;
+            var allowButton = new List<Key>() { Key.Left, Key.Right, Key.LeftCtrl, Key.RightCtrl, Key.V, Key.Delete };
 
-            if (ch == 46 && textBox.Text.IndexOf('.') != -1)
+
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl) || Keyboard.IsKeyDown(Key.V))
+            {
+
+                var pasteText = Clipboard.GetText().Replace(",", "."); 
+                var regexChar = new Regex("[^0-9\\.]");
+                var regexPoint = new Regex("\\.");
+
+                if (!regexChar.IsMatch(pasteText) && regexPoint.Matches(pasteText).Count < 2 && pasteText.First() != '.' && pasteText.Last() != '.')
+                {
+                    textBox.Text = pasteText;
+                    textBox.CaretIndex = pasteText.Length;
+                    e.Handled = true;
+                    return;
+                }
+
+                e.Handled = true;
+                return;
+            }
+
+            if (ch == 46 && (textBox.Text.IndexOf('.') != -1
+                || textBox.CaretIndex == 0
+                || textBox.Text.Length == 0)
+                )
             {
                 e.Handled = true;
                 return;
             }
-            if (ch == 46 && textBox.Text.Length == 0)
+
+            if (!char.IsDigit(ch) && ch != 8 && ch != 46 && !allowButton.Contains(e.Key))
             {
                 e.Handled = true;
-                return;
             }
 
-            if (!char.IsDigit(ch) && ch != 8 && ch != 46)
-            {
-                e.Handled = true;
-            }
         }
 
         private void ModeRadioButton_Checked(object sender, RoutedEventArgs e)
@@ -688,6 +763,8 @@ namespace MyFirstWPF
 
             if (EditEdgeGrid == null) return;
             EditEdgeGrid.Visibility = e.Source.Equals(EditModeRadioButton) ? Visibility.Visible : Visibility.Collapsed;
+            NodeRelationDataGrid.Visibility = e.Source.Equals(EditModeRadioButton) ? Visibility.Visible : Visibility.Collapsed;
+
 
         }
 
@@ -738,6 +815,7 @@ namespace MyFirstWPF
             EdgeVmList.RemoveAll(deleteEdges.Contains);
             NodeList.Remove(nodeVm.Node);
             NodeVmList.Remove(nodeVm);
+            UpdateModelInfo();
 
             NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
         }
@@ -762,7 +840,7 @@ namespace MyFirstWPF
             EdgeVmList.Remove(edgeVm);
 
             WorkPlaceCanvas.Children.Remove(edgeVm.ArrowLine);
-
+            UpdateModelInfo();
 
         }
 
@@ -795,6 +873,7 @@ namespace MyFirstWPF
             EdgeVmList.Clear();
             WorkPlaceCanvas.Children.Clear();
             ClearViewModel();
+            UpdateModelInfo();
         }
 
         private void ClearViewModel()
@@ -869,6 +948,33 @@ namespace MyFirstWPF
             return false;
         }
 
+        private void UpdateModelInfo()
+        {
+            StateCountLabel.Content = NodeList.Count();
+            var edgeCount = 0;
+            foreach (var edgeVm in EdgeVmList)
+            {
+                if (edgeVm.ArrowLine.ArrowEnds == ArrowEnds.Both)
+                {
+                    edgeCount += 2;
+                }
+                else
+                {
+                    edgeCount++;
+                }
+            }
+
+            EdgeCountLabel.Content = edgeCount;
+        }
+
+        public void FillDataGrid<T>(List<T> sourceList) where T : class
+        {
+           // if (sourceList.First() is NodeRelation)
+            {
+                NodeRelationDataGrid.ItemsSource = EditNodeVm.Node.NodeRelations;
+            }
+        }
+
         #endregion Helpful methods
 
 
@@ -876,7 +982,6 @@ namespace MyFirstWPF
 
 
         #endregion
-
 
     }
 }
