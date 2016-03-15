@@ -42,8 +42,7 @@ namespace MyFirstWPF
         public NodeVm StartNodeVmEdge;
         public bool MoveFlag;
         public Point CurrPosition;
-        public NodeVm MoveNodeVm;
-        public NodeVm EditNodeVm;
+        public NodeVm SelectNodeVm;
         public EdgeVm EditEdgeVm;
 
         public MainWindow()
@@ -71,7 +70,7 @@ namespace MyFirstWPF
         private void WorkPlaceCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             ClearViewModel();
-            ClearAllInputElement();
+            // ClearAllInputElement();
 
             //if (Keyboard.IsKeyDown(Key.D))
             //{
@@ -85,7 +84,7 @@ namespace MyFirstWPF
                 return;
             }
 
-            if (CreateModeRadioButton.IsChecked.GetValueOrDefault())
+            //  if (CreateModeRadioButton.IsChecked.GetValueOrDefault())
             {
                 var cursorPosition = e.GetPosition(WorkPlaceCanvas);
 
@@ -147,10 +146,10 @@ namespace MyFirstWPF
 
         private void WorkPlaceCanvas_OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (e.Delta < 0)
-                EditModeRadioButton.IsChecked = true;
-            else
-                CreateModeRadioButton.IsChecked = true;
+            //if (e.Delta < 0)
+            //    EditModeRadioButton.IsChecked = true;
+            //else
+            //    CreateModeRadioButton.IsChecked = true;
         }
 
         #endregion WorkPlaceCanvas Handle events
@@ -164,7 +163,7 @@ namespace MyFirstWPF
 
             #region Создание связи
 
-            if (CreateModeRadioButton.IsChecked.GetValueOrDefault())
+            //  if (CreateModeRadioButton.IsChecked.GetValueOrDefault())
             {
                 var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
                 if (nodeVm == null || Equals(StartNodeVmEdge, nodeVm))
@@ -175,6 +174,8 @@ namespace MyFirstWPF
                 else if (StartNodeVmEdge == null)
                 {
                     StartNodeVmEdge = nodeVm;
+                    SelectNodeVm = nodeVm;
+                    FillNodeEditFields(ref SelectNodeVm);
                     NodeService.SetNodeVmColor(ref StartNodeVmEdge, border: NodeColors.EdgeCreateBorder);
 
                 }
@@ -244,16 +245,14 @@ namespace MyFirstWPF
                         }
                     };
 
-                    SetArrowLineEventHandles(edgeVm.ArrowLine);
                     StartNodeVmEdge.EdgeVmList.Add(edgeVm);
                     nodeVm.EdgeVmList.Add(edgeVm);
 
                     EdgeVmList.Add(edgeVm);
-
                     WorkPlaceCanvas.Children.Add(edgeVm.ArrowLine);
-                    //WorkPlaceCanvas.Children.Add(edgeVm.FromWeightLabel);
                     NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
                     UpdateModelInfo();
+                    FillDataGrid();
                 }
 
             }
@@ -265,7 +264,7 @@ namespace MyFirstWPF
         private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
-            NodeService.SetNodeVmColor(ref EditNodeVm);
+            NodeService.SetNodeVmColor(ref SelectNodeVm);
             NodeService.SetEdgeVmColor(ref EditEdgeVm, true);
 
             if (HotKeys(sender))
@@ -274,45 +273,32 @@ namespace MyFirstWPF
                 return;
             }
 
-            if (CreateModeRadioButton.IsChecked == true)
+            //   if (CreateModeRadioButton.IsChecked == true)
             {
                 CurrPosition = e.GetPosition(WorkPlaceCanvas);
                 MoveFlag = true;
-                MoveNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
-                NodeService.SetNodeVmColor(ref MoveNodeVm, border: NodeColors.MoveNodeBorder);
-                Mouse.Capture(MoveNodeVm.TextBlock);
+                SelectNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
+                NodeService.SetNodeVmColor(ref SelectNodeVm, border: NodeColors.MoveNodeBorder);
+                Mouse.Capture(SelectNodeVm.TextBlock);
             }
-            if (EditModeRadioButton.IsChecked == true)
+            //  if (EditModeRadioButton.IsChecked == true)
             {
-                EditNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
-                NodeService.SetNodeVmColor(ref EditNodeVm, border: NodeColors.EditNodeBorder);
-                NodeNumberTextBox.Text = EditNodeVm.Node.Id.ToString();
-                StartNodeCheckBox.IsChecked = EditNodeVm.Node.IsStartNode;
-                RejectionNodeCheckBox.IsChecked = EditNodeVm.Node.IsRejectionNode;
+                //  SelectNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
+                NodeService.SetNodeVmColor(ref SelectNodeVm, border: NodeColors.EditNodeBorder);
 
-                if (EditNodeVm.Node.IsStartNode)
-                {
-                    StartNodeCheckBox.IsEnabled = false;
-                    RejectionNodeCheckBox.IsEnabled = false;
-                }
-                else
-                {
-                    StartNodeCheckBox.IsEnabled = true;
-                    RejectionNodeCheckBox.IsEnabled = true;
-                }
+                FillNodeEditFields(ref SelectNodeVm);
 
-                FillDataGrid(EditNodeVm.Node.NodeRelations);
+                FillDataGrid();
             }
 
             e.Handled = true;
         }
         private void TextBlock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (MoveNodeVm == null) return;
+            if (SelectNodeVm == null) return;
             Mouse.Capture(null);
             MoveFlag = false;
-            NodeService.SetNodeVmColor(ref MoveNodeVm, border: NodeColors.NormalBorder);
-            MoveNodeVm = null;
+            NodeService.SetNodeVmColor(ref SelectNodeVm, border: NodeColors.NormalBorder);
             e.Handled = true;
         }
 
@@ -328,8 +314,8 @@ namespace MyFirstWPF
                 if (cursorPosition.X <= NodeRadius || cursorPosition.X >= WorkPlaceCanvas.ActualWidth - NodeRadius) return;
                 if (cursorPosition.Y <= NodeRadius || cursorPosition.Y >= WorkPlaceCanvas.ActualHeight - NodeRadius) return;
 
-                MoveNodeVm.TextBlock.Margin = new Thickness(cursorPosition.X - NodeRadius, cursorPosition.Y - NodeRadius, 0, 0);
-                MoveNodeVm.Position = new Point(cursorPosition.X, cursorPosition.Y);
+                SelectNodeVm.TextBlock.Margin = new Thickness(cursorPosition.X - NodeRadius, cursorPosition.Y - NodeRadius, 0, 0);
+                SelectNodeVm.Position = new Point(cursorPosition.X, cursorPosition.Y);
             }
 
             e.Handled = true;
@@ -338,68 +324,6 @@ namespace MyFirstWPF
         #endregion TextBlock Handle events
 
         #region ArrowLine Hande events
-
-        private void ArrowLine_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            NodeService.SetEdgeVmColor(ref EditEdgeVm, true);
-
-            if (HotKeys(sender))
-            {
-                e.Handled = true;
-                return;
-            }
-
-            if (EditModeRadioButton.IsChecked.GetValueOrDefault())
-            {
-                var arrowLine = sender as ArrowLine;
-                arrowLine.Stroke = EdgeColors.SelectEdge;
-                EditEdgeVm = EdgeVmList.Single(ed => ed.ArrowLine.Equals(arrowLine));
-                var toNodeVm = EditEdgeVm.ToNodeVm;
-                var fromNodeVm = EditEdgeVm.FromNodeVm;
-
-                var weightFrom = fromNodeVm.Node.NodeRelations.SingleOrDefault(r => r.NodeId == toNodeVm.Node.Id);
-                var weightTo = toNodeVm.Node.NodeRelations.SingleOrDefault(r => r.NodeId == fromNodeVm.Node.Id);
-
-                if (weightFrom != null)
-                {
-                    EdgeLambdaTextBox1.Text = weightFrom.Weight.ToString();
-                    EdgeEditLabel1.Content = string.Format("Из {0} в {1}", fromNodeVm.Node.Id, toNodeVm.Node.Id);
-                }
-                else
-                {
-                    EdgeLambdaTextBox1.Text = string.Empty;
-                    EdgeEditLabel1.Content = string.Format("Из {1} в {0}", fromNodeVm.Node.Id, toNodeVm.Node.Id);
-                }
-
-                if (weightTo != null)
-                {
-                    EdgeLambdaTextBox2.Text = weightTo.Weight.ToString();
-                    EdgeEditLabel2.Content = string.Format("Из {0} в {1}", toNodeVm.Node.Id, fromNodeVm.Node.Id);
-                }
-                else
-                {
-                    EdgeLambdaTextBox2.Text = string.Empty;
-                    EdgeEditLabel2.Content = string.Format("Из {1} в {0}", fromNodeVm.Node.Id, toNodeVm.Node.Id);
-                }
-
-                e.Handled = true;
-
-            }
-        }
-
-        private void ArrowLine_MouseLeave(object sender, MouseEventArgs e)
-        {
-            Cursor = Cursors.Arrow;
-
-        }
-
-        private void ArrowLine_MouseEnter(object sender, MouseEventArgs e)
-        {
-            if (EditModeRadioButton.IsChecked.GetValueOrDefault())
-            {
-                Cursor = Cursors.Hand;
-            }
-        }
 
         #endregion
 
@@ -435,89 +359,14 @@ namespace MyFirstWPF
 
         private void NewButton_OnClick(object sender, RoutedEventArgs e)
         {
+            Properties.Settings.Default.LastSaveFile = "";
+            Properties.Settings.Default.Save();
             ClearModel();
-        }
-
-        private void SaveEditEdgeButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (EditEdgeVm == null) return;
-
-            var toNodeVm = EditEdgeVm.ToNodeVm;
-            var fromNodeVm = EditEdgeVm.FromNodeVm;
-
-            var relationFrom = fromNodeVm.Node.NodeRelations.SingleOrDefault(r => r.NodeId == toNodeVm.Node.Id);
-            var relationTo = toNodeVm.Node.NodeRelations.SingleOrDefault(r => r.NodeId == fromNodeVm.Node.Id);
-
-
-            if (relationFrom != null && relationTo != null)
-            {
-                if (EdgeLambdaTextBox1.Text.Length == 0 || EdgeLambdaTextBox2.Text.Length == 0)
-                {
-                    MessageBox.Show("Все веса должны быть заданы");
-                    return;
-                }
-
-                var weight1 = double.Parse(EdgeLambdaTextBox1.Text, CultureInfo.InvariantCulture);
-                var weight2 = double.Parse(EdgeLambdaTextBox2.Text, CultureInfo.InvariantCulture);
-
-                if (weight1 == 0.0 || weight2 == 0.0)
-                {
-                    MessageBox.Show("Ребра графа должны иметь веса отличные от нуля");
-                    return;
-                }
-
-                relationFrom.Weight = weight1;
-                relationTo.Weight = weight2;
-            }
-
-            if (relationTo == null)
-            {
-                if (EdgeLambdaTextBox1.Text.Length == 0)
-                {
-                    MessageBox.Show("Все веса должны быть заданы");
-                    return;
-                }
-
-                var weight1 = double.Parse(EdgeLambdaTextBox1.Text, CultureInfo.InvariantCulture);
-
-                if (weight1 == 0.0)
-                {
-                    MessageBox.Show("Ребра графа должны иметь веса отличные от нуля");
-                    return;
-                }
-
-                relationFrom.Weight = weight1;
-            }
-
-            if (relationFrom == null)
-            {
-                if (EdgeLambdaTextBox2.Text.Length == 0)
-                {
-                    MessageBox.Show("Все веса должны быть заданы");
-                    return;
-                }
-
-                var weight2 = double.Parse(EdgeLambdaTextBox2.Text, CultureInfo.InvariantCulture);
-
-                if (weight2 == 0.0)
-                {
-                    MessageBox.Show("Ребра графа должны иметь веса отличные от нуля");
-                    return;
-                }
-
-                relationTo.Weight = weight2;
-            }
-
-            EdgeLambdaTextBox1.Text = "";
-            EdgeLambdaTextBox2.Text = "";
-            NodeService.SetEdgeVmColor(ref EditEdgeVm);
-
-
         }
 
         private void SaveEditNodeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if (EditNodeVm == null) return;
+            if (SelectNodeVm == null) return;
 
             var regex = new Regex("[^0-9]+");
             if (regex.IsMatch(NodeNumberTextBox.Text))
@@ -533,7 +382,7 @@ namespace MyFirstWPF
 
             var number = int.Parse(NodeNumberTextBox.Text);
 
-            if (NodeList.Any(n => n.Id == number) && number != EditNodeVm.Node.Id)
+            if (NodeList.Any(n => n.Id == number) && number != SelectNodeVm.Node.Id)
             {
                 MessageBox.Show("Узел с указанным номером уже существует", "Ошибка редактирования", MessageBoxButton.OK);
                 return;
@@ -550,17 +399,17 @@ namespace MyFirstWPF
                 oldStartNode.IsStartNode = false;
                 var oldStartNodeVm = NodeVmList.Single(nv => nv.Node.Equals(oldStartNode));
                 oldStartNodeVm.TextBlock.Background = new VisualBrush(NodeService.GetEllipse(NodeRadius, NodeColors.NormalBackground, NodeColors.NormalBorder));
-                var newStartNodeVm = NodeVmList.Single(nv => nv.Equals(EditNodeVm));
+                var newStartNodeVm = NodeVmList.Single(nv => nv.Equals(SelectNodeVm));
                 newStartNodeVm.TextBlock.Background = new VisualBrush(NodeService.GetEllipse(NodeRadius, NodeColors.StartNodeBackground, NodeColors.NormalBorder));
 
             }
 
-            ChangeNodeId(EditNodeVm.Node.Id, number);
-            EditNodeVm.Node.IsStartNode = StartNodeCheckBox.IsChecked.GetValueOrDefault();
-            EditNodeVm.Node.IsRejectionNode = RejectionNodeCheckBox.IsChecked.GetValueOrDefault();
+            ChangeNodeId(SelectNodeVm.Node.Id, number);
+            SelectNodeVm.Node.IsStartNode = StartNodeCheckBox.IsChecked.GetValueOrDefault();
+            SelectNodeVm.Node.IsRejectionNode = RejectionNodeCheckBox.IsChecked.GetValueOrDefault();
 
             NodeNumberTextBox.Clear();
-            NodeService.SetNodeVmColor(ref EditNodeVm, border: NodeColors.NormalBorder);
+            NodeService.SetNodeVmColor(ref SelectNodeVm, border: NodeColors.NormalBorder);
         }
 
         private void OpenButton_OnClick(object sender, RoutedEventArgs e)
@@ -644,17 +493,17 @@ namespace MyFirstWPF
                         StrokeThickness = EdgeThickness.NormalThickness
                     };
 
-                    SetArrowLineEventHandles(edgeVm.ArrowLine);
                     EdgeVmList.Add(edgeVm);
                     WorkPlaceCanvas.Children.Add(edgeVm.ArrowLine);
                 }
 
                 Properties.Settings.Default.LastOpenFile = fileDialog.SafeFileName;
-                Properties.Settings.Default.LastSaveFile = lastOpenFile;
+                Properties.Settings.Default.LastSaveFile = fileDialog.SafeFileName;
                 Properties.Settings.Default.Save();
 
                 this.Title = fileDialog.FileName;
                 UpdateModelInfo();
+                FillDataGrid();
 
             }
         }
@@ -722,7 +571,7 @@ namespace MyFirstWPF
             if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl) || Keyboard.IsKeyDown(Key.V))
             {
 
-                var pasteText = Clipboard.GetText().Replace(",", "."); 
+                var pasteText = Clipboard.GetText().Replace(",", ".");
                 var regexChar = new Regex("[^0-9\\.]");
                 var regexPoint = new Regex("\\.");
 
@@ -753,21 +602,6 @@ namespace MyFirstWPF
             }
 
         }
-
-        private void ModeRadioButton_Checked(object sender, RoutedEventArgs e)
-        {
-            ClearViewModel();
-
-            if (EditNodeGrid == null) return;
-            EditNodeGrid.Visibility = e.Source.Equals(EditModeRadioButton) ? Visibility.Visible : Visibility.Collapsed;
-
-            if (EditEdgeGrid == null) return;
-            EditEdgeGrid.Visibility = e.Source.Equals(EditModeRadioButton) ? Visibility.Visible : Visibility.Collapsed;
-            NodeRelationDataGrid.Visibility = e.Source.Equals(EditModeRadioButton) ? Visibility.Visible : Visibility.Collapsed;
-
-
-        }
-
         #endregion Others
 
         #region Helpful methods
@@ -817,10 +651,19 @@ namespace MyFirstWPF
             NodeVmList.Remove(nodeVm);
             UpdateModelInfo();
 
+            if (nodeVm.Equals(SelectNodeVm))
+            {
+                NodeNumberTextBox.Clear();
+                NodeService.SetNodeVmColor(ref SelectNodeVm, true);
+                FillDataGrid();
+            }
+
+
             NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
         }
 
 
+        // Удал ребра
         private void DeleteEdge(EdgeVm edgeVm)
         {
             var fromNodeVm = NodeVmList.SingleOrDefault(nv => nv.Node.Id == edgeVm.FromNodeVmId);
@@ -844,7 +687,6 @@ namespace MyFirstWPF
 
         }
 
-
         private void ChangeNodeId(int oldId, int newId)
         {
             var node = NodeList.Single(n => n.Id == oldId);
@@ -858,7 +700,7 @@ namespace MyFirstWPF
             {
                 Node.NodeCount = newId + 1;
             }
-            EditNodeVm.Node.Id = newId;
+            SelectNodeVm.Node.Id = newId;
 
             foreach (var relation in NodeList.Select(nodeL => nodeL.NodeRelations.Where(n => n.NodeId == oldId).ToList()).SelectMany(relations => relations))
             {
@@ -878,17 +720,8 @@ namespace MyFirstWPF
 
         private void ClearViewModel()
         {
-            NodeService.SetNodeVmColor(ref MoveNodeVm, true);
-            NodeService.SetNodeVmColor(ref EditNodeVm, true);
             NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
             NodeService.SetEdgeVmColor(ref EditEdgeVm, true);
-        }
-
-        private void ClearAllInputElement()
-        {
-            EdgeLambdaTextBox1.Clear();
-            EdgeLambdaTextBox2.Clear();
-            NodeNumberTextBox.Clear();
         }
 
         public void SetTextBlockEventHandles(TextBlock textBlock)
@@ -899,14 +732,8 @@ namespace MyFirstWPF
             textBlock.MouseMove += TextBlock_MouseMove;
         }
 
-        public void SetArrowLineEventHandles(ArrowLine arrowLine)
-        {
-            arrowLine.MouseLeftButtonDown += ArrowLine_MouseLeftButtonDown;
-            arrowLine.MouseEnter += ArrowLine_MouseEnter;
-            arrowLine.MouseLeave += ArrowLine_MouseLeave;
 
-        }
-
+        // Работа с горячими клавишами
         public bool HotKeys(object obj)
         {
             if (obj is TextBlock)
@@ -948,6 +775,7 @@ namespace MyFirstWPF
             return false;
         }
 
+        // Обновление  вспомогательной информации
         private void UpdateModelInfo()
         {
             StateCountLabel.Content = NodeList.Count();
@@ -967,12 +795,38 @@ namespace MyFirstWPF
             EdgeCountLabel.Content = edgeCount;
         }
 
-        public void FillDataGrid<T>(List<T> sourceList) where T : class
+        // Заполнение грида свзяей
+        public void FillDataGrid()
         {
-           // if (sourceList.First() is NodeRelation)
+            if (SelectNodeVm == null)
             {
-                NodeRelationDataGrid.ItemsSource = EditNodeVm.Node.NodeRelations;
+                NodeRelationDataGrid.ItemsSource = null;
+                NodeRelationDataGrid.Items.Refresh();
+                return;
             }
+
+            NodeRelationDataGrid.ItemsSource = SelectNodeVm.Node.NodeRelations;
+            NodeRelationDataGrid.Items.Refresh();
+        }
+
+        // Заполнение блока редактирования состояния
+        public void FillNodeEditFields(ref NodeVm nodeVm)
+        {
+            NodeNumberTextBox.Text = nodeVm.Node.Id.ToString();
+            StartNodeCheckBox.IsChecked = nodeVm.Node.IsStartNode;
+            RejectionNodeCheckBox.IsChecked = nodeVm.Node.IsRejectionNode;
+
+            if (nodeVm.Node.IsStartNode)
+            {
+                StartNodeCheckBox.IsEnabled = false;
+                RejectionNodeCheckBox.IsEnabled = false;
+            }
+            else
+            {
+                StartNodeCheckBox.IsEnabled = true;
+                RejectionNodeCheckBox.IsEnabled = true;
+            }
+            FillDataGrid();
         }
 
         #endregion Helpful methods
@@ -980,6 +834,34 @@ namespace MyFirstWPF
 
         #region MainWindow events handler
 
+
+        #endregion
+
+
+        #region NodeRelationDataGrid events handler
+
+        // Обработчик для кнопки delete. Удаление визуальных связей при удаление связей из грида 
+        private void NodeRelationDataGrid_OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete)
+            {
+                var deleteRelationIds = NodeRelationDataGrid.SelectedItems.OfType<NodeRelation>().Select(r => r.NodeId).ToList();
+
+                foreach (var id in deleteRelationIds)
+                {
+                    var edge = EdgeVmList.Single(c => c.FromNodeVm.Node.Id == SelectNodeVm.Node.Id && c.ToNodeVm.Node.Id == id || c.ToNodeVm.Node.Id == SelectNodeVm.Node.Id && c.FromNodeVm.Node.Id == id);
+                    if (edge.ArrowLine.ArrowEnds == ArrowEnds.Both)
+                    {
+                        edge.ArrowLine.ArrowEnds = NodeService.VectorLen(SelectNodeVm.Position,new Point(edge.ArrowLine.X1, edge.ArrowLine.Y1)) >
+                                                   NodeService.VectorLen(SelectNodeVm.Position,new Point(edge.ArrowLine.X2, edge.ArrowLine.Y2)) ? ArrowEnds.End : ArrowEnds.Start;
+                    }
+                    else
+                    {
+                        DeleteEdge(edge);
+                    }
+                }
+            }
+        }
 
         #endregion
 

@@ -59,11 +59,15 @@ namespace MyFirstWPF
                 Directory.CreateDirectory(GpssFilesPath);
             }
 
+            var lastSaveFile = Properties.Settings.Default.LastSaveFile.Replace(".json", ".txt");
+
             var saveDialog = new SaveFileDialog
          {
              DefaultExt = ".txt",
              Filter = "Text documents (.txt)|*.txt",
-             InitialDirectory = GpssFilesPath
+             InitialDirectory = GpssFilesPath,
+             FileName = lastSaveFile,
+             OverwritePrompt = false
          };
 
             var result = saveDialog.ShowDialog();

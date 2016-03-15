@@ -28,7 +28,8 @@ namespace MyFirstWPF.Services
                 result.Append(GetStateBlock(node));
             }
 
-            result.Append(GetDeviceBlock());
+            result.Append(GetDeviceBlock("Dev"));
+            result.Append(GetDeviceBlock("DevS"));
           //  result.Append(GetHelpfulBlock(model));
             result.Append(GetProcedureBlock(model));
 
@@ -116,13 +117,14 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private static string GetDeviceBlock()
+        private static string GetDeviceBlock(string name)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Устройство--------------------");
-            result.AppendLine("DevMet SEIZE DEV");
+           
+            result.AppendLine(string.Format("{0}Met SEIZE {0}",name));
             result.AppendLine("ADVANCE p$Time");
-            result.AppendLine("RELEASE DEV");
+            result.AppendLine(string.Format("RELEASE {0}", name));
             result.AppendLine("TRANSFER ,p$ReturnState");
             result.AppendLine(";---------------------------------------------------------------");
 
@@ -174,8 +176,10 @@ namespace MyFirstWPF.Services
                 }
 
             }
-
-            if (node.IsRejectionNode)
+            
+            
+            // Вариант оставить это для всех
+         //   if (node.IsRejectionNode)
             {
                 result.AppendLine(string.Format("ASSIGN ReturnState,ReturnState{0}Met", node.Id));
             }
@@ -199,12 +203,14 @@ namespace MyFirstWPF.Services
             result.AppendLine(string.Format("ASSIGN State,MX$NextStateMat(1,2)"));
 
             result.AppendLine(string.Format("SAVEVALUE CorrectStateId,{0}", node.Id));
-            // result.AppendLine(string.Format("SAVEVALUE IsCorrect,True"));
             result.AppendLine(string.Format("MSAVEVALUE StateCountMat+,1,{0},1", node.Id + 1));
 
-            result.AppendLine(node.IsRejectionNode ? string.Format("TRANSFER ,DevMet") : string.Format("ADVANCE p$Time"));
-            //  result.AppendLine(node.IsRejectionNode ? string.Format("ReturnState{0}Met SAVEVALUE IsCorrect,False", node.Id) : string.Format("SAVEVALUE IsCorrect,False"));
-            result.AppendLine(node.IsRejectionNode ? string.Format("ReturnState{0}Met MSAVEVALUE StateTimeMat+,1,{1},p$Time", node.Id, node.Id + 1) : string.Format("MSAVEVALUE StateTimeMat+,1,{0},p$Time", node.Id + 1));
+            // 
+          //  result.AppendLine(node.IsRejectionNode ? string.Format("TRANSFER ,DevMet") : string.Format("ADVANCE p$Time"));
+            result.AppendLine(node.IsRejectionNode ? string.Format("TRANSFER ,DevMet") : string.Format("TRANSFER ,DevSMet"));
+         
+           // result.AppendLine(node.IsRejectionNode ? string.Format("ReturnState{0}Met MSAVEVALUE StateTimeMat+,1,{1},p$Time", node.Id, node.Id + 1) : string.Format("MSAVEVALUE StateTimeMat+,1,{0},p$Time", node.Id + 1));
+            result.AppendLine(string.Format("ReturnState{0}Met MSAVEVALUE StateTimeMat+,1,{1},p$Time", node.Id, node.Id + 1));
 
             result.AppendLine(string.Format("TRANSFER ,p$State"));
             result.AppendLine(";---------------------------------------------------------------");
@@ -267,6 +273,7 @@ namespace MyFirstWPF.Services
             sumCountNotWork.Remove(sumCountNotWork.Length - 1, 1);
 
             result.AppendLine(string.Format("SAVEVALUE Tw,(x$workTimeAll/({0}))", sumCountWork));
+            result.AppendLine(string.Format("SAVEVALUE T,(x$workTimeAll/({0}))", sumCountNotWork));
             result.AppendLine(string.Format("SAVEVALUE Tv,(x$notWorkTimeAll/({0}))", sumCountNotWork));
             result.AppendLine(string.Format("SAVEVALUE kGotovMid,(x$Tw/(x$Tw+x$Tv))"));
 

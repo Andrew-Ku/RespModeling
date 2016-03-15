@@ -4,7 +4,6 @@
         x:Class="MyFirstWPF.MainWindow"
         xmlns:local="clr-namespace:MyFirstWPF.Models"
         xmlns:validation="clr-namespace:MyFirstWPF.Validation"
-        xmlns:toolkit="http://schemas.microsoft.com/wpf/2008/toolkit"
         Title="" Height="auto"
         WindowState="Maximized">
 
@@ -40,13 +39,11 @@
                 <Label x:Name="MoveXPosLabel" Content="X" MinWidth="30" HorizontalContentAlignment="Right"/>
                 <Label x:Name="MoveYPosLabel" Content="Y" MinWidth="30" HorizontalContentAlignment="Right"/>
             </StackPanel>
-            <StackPanel DockPanel.Dock="Left" Orientation="Vertical" MinWidth="150" Background="WhiteSmoke" Width="86" >
-                <Label Content="Режимы:"/>
-                <RadioButton x:Name="CreateModeRadioButton" Content="Режим создания" IsChecked="True" Checked="ModeRadioButton_Checked"/>
-                <RadioButton x:Name="EditModeRadioButton"  Content="Редактирование" Checked="ModeRadioButton_Checked"/>
-              
-
-                <Grid x:Name="EditNodeGrid" Visibility="Collapsed">
+            <StackPanel DockPanel.Dock="Left" Orientation="Vertical" MinWidth="150" Background="WhiteSmoke" Width="113" >
+                <Border BorderBrush="Black" BorderThickness="0 0 0 2">
+                    <Label Content="Состояние" FontSize="14" Background="Beige"/>
+                </Border>
+                <Grid x:Name="EditNodeGrid" Visibility="Visible">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition/>
@@ -63,30 +60,40 @@
 						MaxLength="2"
 						Margin="5,1,5,1"
 						Grid.Column="1"/>
-                    <CheckBox   Grid.Column="0" Grid.Row="1" x:Name="StartNodeCheckBox"  Content="Стартовый узел"/>
+                    <CheckBox   Grid.Column="0" Grid.Row="1" x:Name="StartNodeCheckBox"  Content="Стартовый узел" Grid.ColumnSpan="2" Margin="0,5,26,5"/>
 
-                    <CheckBox Grid.Row="2" x:Name="RejectionNodeCheckBox" Grid.Column="0" Content="Отказной узел"/>
-                    <Button Grid.Row="3" Grid.Column="0" Margin="5,1,2,1" Click="SaveEditNodeButton_OnClick" Content="Сохранить"/>
-                    <Button Grid.Row="3" Grid.Column="1" Margin="2,1,5,1" Content="Вернуть"/>
+                    <CheckBox Grid.Row="2" x:Name="RejectionNodeCheckBox" Grid.Column="0" Content="Отказной узел" Grid.ColumnSpan="2" Margin="0,0,26,5"/>
+                    <Button Grid.Row="3" Grid.Column="0" Margin="5,1,2,5" Click="SaveEditNodeButton_OnClick" Content="Сохранить"/>
+                   
                 </Grid>
 
+                <Border BorderBrush="Black" BorderThickness="0 2 0 0">
+                    <Label Content="Связи состояния:" FontSize="15" Background="Beige"/>
+                </Border>
+
+                <!--Грид для связей узла-->
                 <DataGrid 
                     Name="NodeRelationDataGrid"     
                     ItemsSource="{x:Array local:NodeRelation}"
                     AutoGenerateColumns="False"
-                    Visibility="Collapsed"
+                    Visibility="Visible"
                     RowHeaderWidth="16"
                     Height="100"
                     HorizontalScrollBarVisibility="Disabled"
                     CanUserAddRows="False"
-                    VerticalScrollBarVisibility="Auto">
+                    VerticalScrollBarVisibility="Auto"
+                    Background="WhiteSmoke"
+                    BorderThickness="0 0 0 0"
+                    CanUserResizeColumns="False"
+                    PreviewKeyDown="NodeRelationDataGrid_OnPreviewKeyDown"
+                    >
                     <DataGrid.Columns >
                         <DataGridTextColumn 
                             Width="70"
                             Header="Состояние" 
                             Binding="{Binding Path=NodeId}"
                             IsReadOnly="True"/>
-                        <DataGridTextColumn Header="Вес" Width="80">
+                        <DataGridTextColumn Header="Вес" MinWidth="50">
                             <DataGridTextColumn.Binding>
                                 <Binding Path="Weight">
                                     <Binding.ValidationRules>
@@ -97,39 +104,6 @@
                         </DataGridTextColumn>
                     </DataGrid.Columns>
                 </DataGrid>
-
-                <Grid x:Name="EditEdgeGrid" Visibility="Collapsed">
-                    <Grid.RowDefinitions>
-                        <RowDefinition />
-                        <RowDefinition/>
-                        <RowDefinition/>
-                        <RowDefinition/>
-
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-
-                    <Label   Grid.Row="0" Grid.Column="0" Content="Ребро:" HorizontalContentAlignment="Right"/>
-                    <Label x:Name="EdgeEditLabel1" Grid.Row="1" Grid.Column="0"  HorizontalContentAlignment="Right"/>
-                    <TextBox Grid.Row="1" Grid.Column="1"  x:Name="EdgeLambdaTextBox1"  Height="22" 
-						VerticalAlignment="Bottom" PreviewKeyDown="EdgeLambdaValidation"
-						Margin="5,1,5,1"/>
-                    <Label x:Name="EdgeEditLabel2" Grid.Row="2" Grid.Column="0"  HorizontalContentAlignment="Right"/>
-                    <TextBox Grid.Row="2" Grid.Column="1"  x:Name="EdgeLambdaTextBox2"  Height="22" 
-						VerticalAlignment="Bottom"
-                            PreviewKeyDown="EdgeLambdaValidation"
-                            
-						Margin="5,1,5,1"/>
-
-
-
-                    <Button x:Name="SaveEditEdgeButton" Grid.Row="3" Grid.Column="0" Margin="5,1,2,1" Click="SaveEditEdgeButton_OnClick" Content="Сохранить"/>
-
-
-
-                </Grid>
             </StackPanel>
             <StackPanel x:Name="RightStackPanel"  DockPanel.Dock="Right" Orientation="Vertical" MinWidth="140" Background="WhiteSmoke" HorizontalAlignment="Right">
 
@@ -153,9 +127,6 @@
                     <Label x:Name="EdgeCountLabel"  Grid.Row="1" Grid.Column="1" Content="" HorizontalContentAlignment="Left"/>
                     <Button Grid.Row="2" x:Name="GenerateButton"  Margin="12,58,9,-157" Click="GenerateButton_OnClick" Content="Генерация" Grid.ColumnSpan="2"/>
                 </Grid>
-
-
-
 
             </StackPanel>
             <Border Width="auto" Height="auto" BorderBrush="DarkSlateGray" BorderThickness="1">

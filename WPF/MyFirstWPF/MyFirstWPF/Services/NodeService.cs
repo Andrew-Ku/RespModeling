@@ -129,7 +129,7 @@ namespace MyFirstWPF.Services
             return new Tuple<Point, Point>(newPoint1, newPoint2);
         }
 
-        private static double VectorLen(Point point1, Point point2)
+        public static double VectorLen(Point point1, Point point2)
         {
             return Math.Sqrt(Math.Pow(point2.Y - point1.Y, 2) + Math.Pow(point2.X - point1.X, 2));
         }

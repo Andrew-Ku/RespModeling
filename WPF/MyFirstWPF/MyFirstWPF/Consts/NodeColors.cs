@@ -21,6 +21,6 @@ namespace MyFirstWPF.Consts
 
         public static Brush MoveNodeBorder = Brushes.Red;
 
-        public static Brush EditNodeBorder = Brushes.ForestGreen;
+        public static Brush EditNodeBorder = Brushes.Red;
     }
 }
