@@ -73,7 +73,6 @@
     <Compile Include="Consts\Edge.cs" />
     <Compile Include="Consts\NodeColors.cs" />
     <Compile Include="Consts\StartParameters.cs" />
-    <Compile Include="Consts\WorkMode.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Infrastructure\AutoMapperBootstrapper.cs" />
     <Compile Include="Infrastructure\ForGetChar.cs" />
@@ -89,7 +88,7 @@
     <Compile Include="Profile\StateSaveProfile.cs" />
     <Compile Include="Profile\NodeProfile.cs" />
     <Compile Include="Services\GenerateService.cs" />
-    <Compile Include="Services\MathService.cs" />
+    <Compile Include="Services\FileService.cs" />
     <Compile Include="Services\NodeService.cs" />
     <Compile Include="StartGpssWindow.xaml.cs">
       <DependentUpon>StartGpssWindow.xaml</DependentUpon>

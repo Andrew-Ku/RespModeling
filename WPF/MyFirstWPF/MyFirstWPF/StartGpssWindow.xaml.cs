@@ -51,7 +51,7 @@ namespace MyFirstWPF
             }
 
             var modelingTime = int.Parse(string.Concat(ModelingTimeTextBox.Text.SkipWhile(s => s == '0')));
-            var observationTime = int.Parse(string.Concat(ModelingTimeTextBox.Text.SkipWhile(s => s == '0')));
+            var observationTime = int.Parse(string.Concat(ObservationTimeTextBox.Text.SkipWhile(s => s == '0')));
 
 
             if (!Directory.Exists(GpssFilesPath))

@@ -98,6 +98,7 @@ ASSIGN ReturnState,ReturnState0Met
 SAVEVALUE procHelpfulPar,(ChooseWayProc(x$LambdaTime0_3,State3Met,x$LambdaTime0_5,State5Met,999999,999999))
 ASSIGN Time,MX$NextStateMat(1,1)
 ASSIGN State,MX$NextStateMat(1,2)
+ASSIGN StartTime,C1
 SAVEVALUE CorrectStateId,0
 MSAVEVALUE StateCountMat+,1,1,1
 TRANSFER ,DevSMet
@@ -281,6 +282,21 @@ countState = countState+1;
 END;
 StateTimeMat[1, currentStateArg + 1] = StateTimeMat[1, currentStateArg + 1] + endTimeArg-sumStateTimes;
  Return(StateTimeMat[1, currentStateArg + 1]);
+END;
+;--------------------------------------------------------------
+
+;--Процедура для коррекции времени ----------------
+PROCEDURE CurrrentRejectProb()
+BEGIN
+TEMPORARY prob;
+RejectByTimeMat[1,2] = RejectByTimeMat[1,2] + RejectByTimeMat[1,1];
+if(RejectByTimeMat[1,1] = 0) THEN Begin
+RejectByTimeMat[1,1] = 0;
+return (0);
+END;
+prob = 1 - (RejectByTimeMat[1,1]/RejectByTimeMat[1,2]);
+RejectByTimeMat[1,1] = 0;
+return (prob);
 END;
 ;--------------------------------------------------------------
 

@@ -342,6 +342,13 @@ namespace MyFirstWPF
                 return;
             }
 
+            if (!NodeList.Single(n=>n.IsStartNode).NodeRelations.Any())
+            {
+                MessageBox.Show("Переход из стартового узла обязателен");
+                return;
+            }
+
+
             var relationNodes = NodeList.SelectMany(n => n.NodeRelations).Select(r => r.NodeId).ToList();
             if (NodeList.Any(node => !relationNodes.Contains(node.Id) && !node.NodeRelations.Any()))
             {
@@ -547,6 +554,8 @@ namespace MyFirstWPF
             if (result == true)
             {
                 var fileName = saveDialog.FileName;
+                Properties.Settings.Default.LastSaveFile = saveDialog.SafeFileName;
+                Properties.Settings.Default.Save();
                 _fileService.SaveFile(modelState, fileName);
             }
         }
@@ -748,6 +757,8 @@ namespace MyFirstWPF
                 if (Keyboard.IsKeyDown(Key.R))
                 {
                     var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, obj as TextBlock));
+                    if (nodeVm.Node.IsStartNode) return false;
+
                     nodeVm.Node.IsRejectionNode = !nodeVm.Node.IsRejectionNode;
                     NodeService.SetNodeVmColor(ref nodeVm);
                     return true;
@@ -797,7 +808,9 @@ namespace MyFirstWPF
 
         // Заполнение грида свзяей
         public void FillDataGrid()
-        {
+        {          
+            NodeRelationDataGrid.CancelEdit();
+
             if (SelectNodeVm == null)
             {
                 NodeRelationDataGrid.ItemsSource = null;
@@ -852,8 +865,8 @@ namespace MyFirstWPF
                     var edge = EdgeVmList.Single(c => c.FromNodeVm.Node.Id == SelectNodeVm.Node.Id && c.ToNodeVm.Node.Id == id || c.ToNodeVm.Node.Id == SelectNodeVm.Node.Id && c.FromNodeVm.Node.Id == id);
                     if (edge.ArrowLine.ArrowEnds == ArrowEnds.Both)
                     {
-                        edge.ArrowLine.ArrowEnds = NodeService.VectorLen(SelectNodeVm.Position,new Point(edge.ArrowLine.X1, edge.ArrowLine.Y1)) >
-                                                   NodeService.VectorLen(SelectNodeVm.Position,new Point(edge.ArrowLine.X2, edge.ArrowLine.Y2)) ? ArrowEnds.End : ArrowEnds.Start;
+                        edge.ArrowLine.ArrowEnds = NodeService.VectorLen(SelectNodeVm.Position, new Point(edge.ArrowLine.X1, edge.ArrowLine.Y1)) >
+                                                   NodeService.VectorLen(SelectNodeVm.Position, new Point(edge.ArrowLine.X2, edge.ArrowLine.Y2)) ? ArrowEnds.End : ArrowEnds.Start;
                     }
                     else
                     {

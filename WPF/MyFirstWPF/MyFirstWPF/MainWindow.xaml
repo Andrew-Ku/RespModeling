@@ -35,10 +35,16 @@
                     <Button Content="Help"/>
                 </ToolBar>
             </ToolBarTray>
-            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" MinWidth="140" Background="Beige">
-                <Label x:Name="MoveXPosLabel" Content="X" MinWidth="30" HorizontalContentAlignment="Right"/>
-                <Label x:Name="MoveYPosLabel" Content="Y" MinWidth="30" HorizontalContentAlignment="Right"/>
-            </StackPanel>
+            
+            <StatusBar  DockPanel.Dock="Bottom">
+                <StatusBarItem>
+                    <Label x:Name="MoveXPosLabel" Content="X" MinWidth="30" HorizontalContentAlignment="Right"/>
+                </StatusBarItem>
+                <StatusBarItem>
+                    <Label x:Name="MoveYPosLabel" Content="Y" MinWidth="30" HorizontalContentAlignment="Right"/>
+                </StatusBarItem>
+            </StatusBar>
+            
             <StackPanel DockPanel.Dock="Left" Orientation="Vertical" MinWidth="150" Background="WhiteSmoke" Width="113" >
                 <Border BorderBrush="Black" BorderThickness="0 0 0 2">
                     <Label Content="Состояние" FontSize="14" Background="Beige"/>

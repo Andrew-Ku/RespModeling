@@ -21,7 +21,6 @@ namespace MyFirstWPF.Services
                 Width = radius,
                 Fill = ellipseColor,
                 Stroke = borderColor
-
             };
         }
 
@@ -29,8 +28,8 @@ namespace MyFirstWPF.Services
         {
             var point3 = new Point();
             var newPoint1 = new Point();
-            var newPoint2 =new Point();
-           
+            var newPoint2 = new Point();
+
             var sin1 = 0.0;
             var sin2 = 0.0;
             var cos1 = 0.0;
@@ -172,8 +171,8 @@ namespace MyFirstWPF.Services
         {
             if (nodeVm == null) return;
 
-            nodeVm.TextBlock.Background = new VisualBrush(GetEllipse(StartParameters.NodeRadius, NodeColors.NormalBackground, border ??  NodeColors.NormalBorder));
-            
+            nodeVm.TextBlock.Background = new VisualBrush(GetEllipse(StartParameters.NodeRadius, NodeColors.NormalBackground, border ?? NodeColors.NormalBorder));
+
             if (nodeVm.Node.IsStartNode)
             {
                 nodeVm.TextBlock.Background =

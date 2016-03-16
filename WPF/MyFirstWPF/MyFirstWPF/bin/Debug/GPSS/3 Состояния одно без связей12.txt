@@ -1,0 +1,122 @@
+;--Инициализирующий блок----------------
+Time EQU 10000 ; время моелирования
+True EQU 1
+False EQU 0
+Lambda0_1 EQU 0.34
+Lambda1_0 EQU 1
+
+NextStateMat MATRIX ,1,2; матрица для хранения времени и следующего состояния
+StateTimeMat MATRIX ,1,2; матрица для хранения времени и следующего состояния
+StateCountMat MATRIX ,1,2; матрица для хранения времени и следующего состояния
+initial x$workTimeAll,0
+initial x$notWorkTimeAll,0
+initial x$kGotov,0 ; коэффициент готовности
+initial x$CorrectStateId,0 ;Метка для коррекции
+initial x$IsCorrect,0 ; нужна ли коррекция 
+initial x$kGotov,0 ; коэффициент готовности
+
+initial x$LambdaTime0_1,0 ; время по интенсивности
+initial x$LambdaTime1_0,0 ; время по интенсивности
+;---------------------------------------------------------------
+;--Непонятный блок----------------
+START 1
+RMULT 1281
+;---------------------------------------------------------------
+;--Конечный блок--------------------
+GENERATE Time
+SAVEVALUE correctTime,(CorrectStateTime(x$CorrectStateId,C1))
+FinishMet SAVEVALUE TimeAll,(MX$StateTimeMat(1,1)+MX$StateTimeMat(1,2))
+SAVEVALUE notWorkTimeAll,(MX$StateTimeMat(1,2))
+SAVEVALUE workTimeAll,(MX$StateTimeMat(1,1))
+SAVEVALUE prob0,(MX$StateTimeMat(1,1)/x$TimeAll)
+SAVEVALUE prob1,(MX$StateTimeMat(1,2)/x$TimeAll)
+SAVEVALUE kGotov,(x$workTimeAll/(x$notWorkTimeAll+x$workTimeAll))
+SAVEVALUE Tw,(x$workTimeAll/(MX$StateCountMat(1,1)))
+SAVEVALUE T,(x$workTimeAll/(mx$StateCountMat(1,2)))
+SAVEVALUE Tv,(x$notWorkTimeAll/(mx$StateCountMat(1,2)))
+SAVEVALUE kGotovMid,(x$Tw/(x$Tw+x$Tv))
+TERMINATE 1 
+;--------------------------------------------------------------
+;--Стартовый блок----------------
+GENERATE	,,,1,
+SEIZE DEV
+RELEASE DEV
+TRANSFER ,State0Met
+;---------------------------------------------------------------
+;--Состояние 0-----------------------
+State0Met SAVEVALUE LambdaTime0_1,(Exponential(1,0,1/Lambda0_1))
+ASSIGN ReturnState,ReturnState0Met
+SAVEVALUE procHelpfulPar,(ChooseWayProc(x$LambdaTime0_1,State1Met))
+ASSIGN Time,MX$NextStateMat(1,1)
+ASSIGN State,MX$NextStateMat(1,2)
+SAVEVALUE CorrectStateId,0
+MSAVEVALUE StateCountMat+,1,1,1
+TRANSFER ,DevSMet
+ReturnState0Met MSAVEVALUE StateTimeMat+,1,1,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 1-----------------------
+State1Met SAVEVALUE LambdaTime1_0,(Exponential(1,0,1/Lambda1_0))
+ASSIGN ReturnState,ReturnState1Met
+SAVEVALUE procHelpfulPar,(ChooseWayProc(x$LambdaTime1_0,State0Met))
+ASSIGN Time,MX$NextStateMat(1,1)
+ASSIGN State,MX$NextStateMat(1,2)
+SAVEVALUE CorrectStateId,1
+MSAVEVALUE StateCountMat+,1,2,1
+TRANSFER ,DevMet
+ReturnState1Met MSAVEVALUE StateTimeMat+,1,2,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Устройство--------------------
+DevMet SEIZE Dev
+ADVANCE p$Time
+RELEASE Dev
+TRANSFER ,p$ReturnState
+;---------------------------------------------------------------
+;--Устройство--------------------
+DevSMet SEIZE DevS
+ADVANCE p$Time
+RELEASE DevS
+TRANSFER ,p$ReturnState
+;---------------------------------------------------------------
+;--Блок процедур----------------
+;--Процедура для поиска слудующего состояния ----------------
+PROCEDURE ChooseWayProc(timeArg0,nextStateArg0)
+BEGIN
+TEMPORARY minTime,nextState;
+minTime = timeArg0; nextState = nextStateArg0;
+NextStateMat[1,1] = minTime; NextStateMat[1,2] = nextState;
+Return (nextState);
+END;
+;--------------------------------------------------------------
+
+;--Процедура для коррекции времени ----------------
+PROCEDURE CorrectStateTime(currentStateArg, endTimeArg)
+BEGIN
+TEMPORARY countState,result;
+countState = 1;
+sumStateTimes = 0;
+WHILE (countState <= 2) DO BEGIN
+sumStateTimes = sumStateTimes + StateTimeMat[1,countState];
+countState = countState+1;
+END;
+StateTimeMat[1, currentStateArg + 1] = StateTimeMat[1, currentStateArg + 1] + endTimeArg-sumStateTimes;
+ Return(StateTimeMat[1, currentStateArg + 1]);
+END;
+;--------------------------------------------------------------
+
+;--Процедура для коррекции времени ----------------
+PROCEDURE CurrrentRejectProb()
+BEGIN
+TEMPORARY prob;
+RejectByTimeMat[1,2] = RejectByTimeMat[1,2] + RejectByTimeMat[1,1];
+if(RejectByTimeMat[1,1] = 0) THEN Begin
+RejectByTimeMat[1,1] = 0;
+return (0);
+END;
+prob =  (RejectByTimeMat[1,1]/RejectByTimeMat[1,2]);
+RejectByTimeMat[1,1] = 0;
+return (prob);
+END;
+;--------------------------------------------------------------
+
