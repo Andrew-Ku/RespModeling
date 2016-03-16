@@ -873,6 +873,8 @@ namespace MyFirstWPF
                         DeleteEdge(edge);
                     }
                 }
+
+                FillDataGrid();
             }
         }
 
