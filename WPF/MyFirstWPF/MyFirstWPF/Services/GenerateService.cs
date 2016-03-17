@@ -335,15 +335,14 @@ namespace MyFirstWPF.Services
             result.AppendLine(";--Процедура для коррекции времени ----------------");
             result.AppendLine(string.Format("PROCEDURE CurrrentRejectProb()"));
             result.AppendLine(string.Format("BEGIN"));
-            result.AppendLine(string.Format("TEMPORARY prob;"));
-            result.AppendLine(string.Format("RejectByTimeMat[1,2] = RejectByTimeMat[1,2] + RejectByTimeMat[1,1];"));
+            result.AppendLine(string.Format("RejectByTimeMat[1,2] = RejectByTimeMat[1,2] + 1;"));
+            result.AppendLine(string.Format("RejectByTimeMat[1,3] = RejectByTimeMat[1,3] + RejectByTimeMat[1,1];"));
             result.AppendLine(string.Format("if(RejectByTimeMat[1,1] = 0) THEN Begin"));
             result.AppendLine(string.Format("RejectByTimeMat[1,1] = 0;"));
             result.AppendLine(string.Format("return (0);"));
             result.AppendLine(string.Format("END;"));
-            result.AppendLine(string.Format("prob = 1 - (RejectByTimeMat[1,1]/RejectByTimeMat[1,2]);"));
             result.AppendLine(string.Format("RejectByTimeMat[1,1] = 0;"));
-            result.AppendLine(string.Format("return (prob);"));
+            result.AppendLine(string.Format("return (1);"));
             result.AppendLine(string.Format("END;"));
             result.AppendLine(";--------------------------------------------------------------");
             result.AppendLine("");
@@ -403,7 +402,7 @@ namespace MyFirstWPF.Services
 
             result.AppendLine(string.Format("StateTimeMat MATRIX ,1,{0}; матрица для хранения времени и следующего состояния", model.Nodes.Count()));
             result.AppendLine(string.Format("StateCountMat MATRIX ,1,{0}; матрица для хранения времени и следующего состояния", model.Nodes.Count()));
-            result.AppendLine(string.Format("RejectByTimeMat MATRIX ,1,2; матрица для хранения времени и следующего состояния"));
+            result.AppendLine(string.Format("RejectByTimeMat MATRIX ,1,3; матрица для хранения времени и следующего состояния"));
 
           
             result.AppendLine("initial x$CorrectStateId,0 ;Метка для коррекции");
@@ -482,8 +481,8 @@ namespace MyFirstWPF.Services
             sumCountNotWork.Remove(sumCountNotWork.Length - 1, 1);
            
       
-            result.AppendLine(string.Format("SAVEVALUE ProbReject,(x$ProbRejectByTime/mx$RejectByTimeMat(1,2))"));
-            result.AppendLine(string.Format("SAVEVALUE MidRejectTime,(x$RejectTime/mx$RejectByTimeMat(1,2))"));
+            result.AppendLine(string.Format("SAVEVALUE ProbReject,(1-(x$ProbRejectByTime/mx$RejectByTimeMat(1,2)))"));
+            result.AppendLine(string.Format("SAVEVALUE MidRejectTime,(x$RejectTime/mx$RejectByTimeMat(1,3))"));
 
 
             result.AppendLine(string.Format("TERMINATE 1 "));
