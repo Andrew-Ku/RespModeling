@@ -93,6 +93,8 @@
     <Compile Include="StartGpssWindow.xaml.cs">
       <DependentUpon>StartGpssWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Validation\IntNumberValidationRule.cs" />
+    <Compile Include="Validation\NotEmptyValidationRule.cs" />
     <Compile Include="Validation\WeightValidationRule.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

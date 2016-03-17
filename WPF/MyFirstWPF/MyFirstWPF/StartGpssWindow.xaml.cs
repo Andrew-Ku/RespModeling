@@ -34,6 +34,8 @@ namespace MyFirstWPF
             NodeList = nodeList;
             GpssFilesPath = Path.Combine(Environment.CurrentDirectory, "GPSS");
             InitializeComponent();
+
+            ModelingTimeTextBox.Focus();
         }
 
         private void StartGenButton_OnClick(object sender, RoutedEventArgs e)
@@ -53,6 +55,11 @@ namespace MyFirstWPF
             var modelingTime = int.Parse(string.Concat(ModelingTimeTextBox.Text.SkipWhile(s => s == '0')));
             var observationTime = int.Parse(string.Concat(ObservationTimeTextBox.Text.SkipWhile(s => s == '0')));
 
+            if (modelingTime < observationTime)
+            {
+                MessageBox.Show("Время моделирования должно быть больше времени наблюдения");
+                return;
+            }
 
             if (!Directory.Exists(GpssFilesPath))
             {
@@ -95,6 +102,20 @@ namespace MyFirstWPF
         {
             var regex = new Regex("[^0-9]+");
             e.Handled = regex.IsMatch(e.Text);
+        }
+
+        private void StartGpssWindow_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                  this.Close();
+            }
+
+            if (e.Key == Key.Enter)
+            {
+                StartGenButton_OnClick(null, null);
+            }
+               
         }
     }
 }

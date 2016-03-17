@@ -41,12 +41,10 @@ namespace MyFirstWPF.Services
 
             result.Append(GetDeviceBlock("Dev"));
             result.Append(GetDeviceBlock("DevS"));
-            //  result.Append(GetHelpfulBlock(model));
-            result.Append(GetProcedureBlock(model));
+           result.Append(GetProcedureBlock(model));
 
             return result.ToString();
         }
-
 
         // Формируем блок инициализации
         private static string GetInitializationBlock(GpssInputModel model)
@@ -133,32 +131,6 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-
-        //
-        //        private static string GetHelpfulBlock(GpssInputModel model)
-        //        {
-        //            var result = new StringBuilder();
-        //            var sumString = new StringBuilder();
-        //
-        //            result.AppendLine(";--Вспомогательный блок--------------------");
-        //
-        //            foreach (var node in model.Nodes)
-        //            {
-        //                sumString.Append(string.Format("MX$StateTimeMat(1,{0})+", node.Id+1));
-        //            }
-        //            sumString.Remove(sumString.Length - 1, 1);
-        //
-        //            foreach (var node in model.Nodes)
-        //            {
-        //                result.AppendLine(string.Format("CorrectState{0}Met MSAVEVALUE StateTimeMat+,1,{2},(Time - ({1}))", node.Id, sumString, node.Id + 1));
-        //                result.AppendLine(string.Format("TRANSFER ,FinishMet"));
-        //            }
-        //
-        //            result.AppendLine(";---------------------------------------------------------------");
-        //
-        //            return result.ToString();
-        //        }
-
         private static string GetStateBlock(Node node)
         {
             var result = new StringBuilder();
@@ -167,20 +139,14 @@ namespace MyFirstWPF.Services
 
             foreach (var relation in node.NodeRelations)
             {
-                if (relation.Equals(node.NodeRelations.First()))
-                {
-                    result.AppendLine(string.Format("State{0}Met SAVEVALUE LambdaTime{0}_{1},(Exponential(1,0,1/Lambda{0}_{1}))", node.Id, relation.NodeId));
-                }
-                else
-                {
-                    result.AppendLine(string.Format("SAVEVALUE LambdaTime{0}_{1},(Exponential(1,0,1/Lambda{0}_{1}))", node.Id, relation.NodeId));
-                }
-
+                result.AppendLine(relation.Equals(node.NodeRelations.First())
+                    ? string.Format("State{0}Met SAVEVALUE LambdaTime{0}_{1},(Exponential(1,0,1/Lambda{0}_{1}))",
+                        node.Id, relation.NodeId)
+                    : string.Format("SAVEVALUE LambdaTime{0}_{1},(Exponential(1,0,1/Lambda{0}_{1}))", node.Id,
+                        relation.NodeId));
             }
             
-            {
-                result.AppendLine(string.Format("ASSIGN ReturnState,ReturnState{0}Met", node.Id));
-            }
+            result.AppendLine(string.Format("ASSIGN ReturnState,ReturnState{0}Met", node.Id));
 
             var procArgs = new StringBuilder();
             for (var i = 0; i < maxRelationCount; i++)
@@ -206,11 +172,8 @@ namespace MyFirstWPF.Services
             result.AppendLine(string.Format("SAVEVALUE CorrectStateId,{0}", node.Id));
             result.AppendLine(string.Format("MSAVEVALUE StateCountMat+,1,{0},1", node.Id + 1));
 
-            // 
-            //  result.AppendLine(node.IsRejectionNode ? string.Format("TRANSFER ,DevMet") : string.Format("ADVANCE p$Time"));
+           
             result.AppendLine(node.IsRejectionNode ? string.Format("TRANSFER ,DevMet") : string.Format("TRANSFER ,DevSMet"));
-
-            // result.AppendLine(node.IsRejectionNode ? string.Format("ReturnState{0}Met MSAVEVALUE StateTimeMat+,1,{1},p$Time", node.Id, node.Id + 1) : string.Format("MSAVEVALUE StateTimeMat+,1,{0},p$Time", node.Id + 1));
             result.AppendLine(string.Format("ReturnState{0}Met MSAVEVALUE StateTimeMat+,1,{1},p$Time", node.Id, node.Id + 1));
 
             result.AppendLine(string.Format("TRANSFER ,p$State"));
@@ -246,7 +209,6 @@ namespace MyFirstWPF.Services
 
             result.AppendLine(";--Конечный блок--------------------");
             result.AppendLine(string.Format("GENERATE Time"));
-            // result.AppendLine(string.Format("TEST E x$IsCorrect,True,FinishMet"));
             result.AppendLine(string.Format("SAVEVALUE correctTime,(CorrectStateTime(x$CorrectStateId,C1))"));
             result.AppendLine(string.Format("FinishMet SAVEVALUE TimeAll,({0})", sumString));
             result.AppendLine(string.Format("SAVEVALUE notWorkTimeAll,({0})", sumNotWork));
@@ -277,8 +239,6 @@ namespace MyFirstWPF.Services
             result.AppendLine(string.Format("SAVEVALUE T,(x$workTimeAll/({0}))", sumCountNotWork));
             result.AppendLine(string.Format("SAVEVALUE Tv,(x$notWorkTimeAll/({0}))", sumCountNotWork));
             result.AppendLine(string.Format("SAVEVALUE kGotovMid,(x$Tw/(x$Tw+x$Tv))"));
-
-
 
             result.AppendLine(string.Format("TERMINATE 1 "));
 
@@ -366,15 +326,11 @@ namespace MyFirstWPF.Services
 
             foreach (var node in model.Nodes)
             {
-                if(node.NodeRelations.Any())
-                result.Append(GetStateBlock(node));
-                else
-                    result.Append(GetNotRestoredStateBlock(node));
+                result.Append(node.NodeRelations.Any() ? GetStateBlock(node) : GetNotRestoredStateBlock(node));
             }
 
             result.Append(GetDeviceBlock("Dev"));
             result.Append(GetDeviceBlock("DevS"));
-            //  result.Append(GetHelpfulBlock(model));
             result.Append(GetProcedureBlock(model));
 
             return result.ToString();

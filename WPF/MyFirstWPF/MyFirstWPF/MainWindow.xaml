@@ -136,12 +136,15 @@
 
             </StackPanel>
             <Border Width="auto" Height="auto" BorderBrush="DarkSlateGray" BorderThickness="1">
+                <ScrollViewer Name="WorkPlaceScrollViewer" Height="auto" Width="auto" VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Auto">
                 <Canvas x:Name="WorkPlaceCanvas" 
 					Background="Azure" 
 					MouseLeftButtonDown="WorkPlaceCanvas_MouseLeftButtonDown" 
-					MouseRightButtonDown="WorkPlaceCanvas_MouseRightButtonDown"
 					MouseMove="WorkPlaceCanvas_MouseMove"
-					MouseWheel="WorkPlaceCanvas_OnMouseWheel"/>
+					MouseWheel="WorkPlaceCanvas_OnMouseWheel"
+                    SizeChanged="WorkPlaceCanvas_OnSizeChanged"/>
+                </ScrollViewer>
             </Border>
         </DockPanel>
     </Grid>

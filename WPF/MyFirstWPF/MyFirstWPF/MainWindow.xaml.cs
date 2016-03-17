@@ -44,6 +44,9 @@ namespace MyFirstWPF
         public Point CurrPosition;
         public NodeVm SelectNodeVm;
         public EdgeVm EditEdgeVm;
+        public double WorkPlaceWidthMin;
+        public double WorkPlaceHeightMin;
+        public bool CanvasSize;
 
         public MainWindow()
         {
@@ -56,6 +59,7 @@ namespace MyFirstWPF
             EdgeVmList = new List<EdgeVm>();
             MoveFlag = false;
             JsonFilesPath = Path.Combine(Environment.CurrentDirectory, "Json");
+            CanvasSize = false;
 
             Properties.Settings.Default.LastSaveFile = "";
             Properties.Settings.Default.LastOpenFile = "";
@@ -70,71 +74,49 @@ namespace MyFirstWPF
         private void WorkPlaceCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             ClearViewModel();
-            // ClearAllInputElement();
-
-            //if (Keyboard.IsKeyDown(Key.D))
-            //{
-            //    e.Handled = true;
-            //    return;
-            //}
 
             if (HotKeys(sender))
             {
                 e.Handled = true;
                 return;
             }
+            var cursorPosition = e.GetPosition(WorkPlaceCanvas);
 
-            //  if (CreateModeRadioButton.IsChecked.GetValueOrDefault())
+            if (cursorPosition.X <= NodeRadius || cursorPosition.X >= WorkPlaceCanvas.ActualWidth - NodeRadius) return;
+            if (cursorPosition.Y <= NodeRadius || cursorPosition.Y >= WorkPlaceCanvas.ActualHeight - NodeRadius) return;
+
+
+            if (NodeVmList.Any(n => Math.Abs(n.Position.X - cursorPosition.X) < NodeRadius * 2 && Math.Abs(n.Position.Y - cursorPosition.Y) < NodeRadius * 2)) return;
+
+            var paddingLeft = Node.NodeCount > 9 ? 12 : 17;
+
+            var textBlock = new TextBlock()
             {
-                var cursorPosition = e.GetPosition(WorkPlaceCanvas);
+                Name = "TextBlock" + Node.NodeCount,
+                Text = Node.NodeCount.ToString(),
+                Height = NodeRadius * 2.0,
+                Width = NodeRadius * 2.0,
+                Padding = new Thickness(paddingLeft, NodeRadius / 2.0, 0, 0),
+                Margin = new Thickness(cursorPosition.X - NodeRadius, cursorPosition.Y - NodeRadius, 0.0, 0.0)
+            };
 
-                if (cursorPosition.X <= NodeRadius || cursorPosition.X >= WorkPlaceCanvas.ActualWidth - NodeRadius) return;
-                if (cursorPosition.Y <= NodeRadius || cursorPosition.Y >= WorkPlaceCanvas.ActualHeight - NodeRadius) return;
+            SetTextBlockEventHandles(textBlock);
 
+            var node = new Node();
+            var nodeVm = new NodeVm()
+            {
+                TextBlock = textBlock,
+                Node = node,
+                Position = cursorPosition
+            };
 
-                if (NodeVmList.Any(n => Math.Abs(n.Position.X - cursorPosition.X) < NodeRadius * 2 && Math.Abs(n.Position.Y - cursorPosition.Y) < NodeRadius * 2)) return;
+            NodeList.Add(node);
+            NodeVmList.Add(nodeVm);
+            NodeService.SetNodeVmColor(ref nodeVm, border: NodeColors.NormalBorder);
+            WorkPlaceCanvas.Children.Add(nodeVm.TextBlock);
+            UpdateModelInfo();
 
-                var paddingLeft = Node.NodeCount > 9 ? 12 : 17;
-
-                var textBlock = new TextBlock()
-                {
-                    Name = "TextBlock" + Node.NodeCount,
-                    Text = Node.NodeCount.ToString(),
-                    Height = NodeRadius * 2.0,
-                    Width = NodeRadius * 2.0,
-                    Padding = new Thickness(paddingLeft, NodeRadius / 2.0, 0, 0),
-                    Margin = new Thickness(cursorPosition.X - NodeRadius, cursorPosition.Y - NodeRadius, 0.0, 0.0)
-                };
-
-
-                SetTextBlockEventHandles(textBlock);
-
-                //     WorkPlaceCanvas.RegisterName(textBlock.Name, textBlock);
-
-
-                var node = new Node();
-                var nodeVm = new NodeVm()
-                {
-                    TextBlock = textBlock,
-                    Node = node,
-                    Position = cursorPosition
-                };
-
-                NodeList.Add(node);
-                NodeVmList.Add(nodeVm);
-
-
-                NodeService.SetNodeVmColor(ref nodeVm, border: NodeColors.NormalBorder);
-
-                WorkPlaceCanvas.Children.Add(nodeVm.TextBlock);
-                UpdateModelInfo();
-            }
             e.Handled = true;
-
-        }
-
-        private void WorkPlaceCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {
 
         }
 
@@ -146,10 +128,33 @@ namespace MyFirstWPF
 
         private void WorkPlaceCanvas_OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            //if (e.Delta < 0)
-            //    EditModeRadioButton.IsChecked = true;
-            //else
-            //    CreateModeRadioButton.IsChecked = true;
+            if (e.Delta < 0 && (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+            {
+                e.Handled = true;
+                if (WorkPlaceCanvas.ActualHeight == WorkPlaceHeightMin ||
+                    WorkPlaceCanvas.ActualWidth == WorkPlaceWidthMin)
+                {
+                    WorkPlaceScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
+                    WorkPlaceScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
+                    return;
+                }
+                   
+                WorkPlaceCanvas.Width -= 5;
+                WorkPlaceCanvas.Height -= 5;
+            }
+            else if (e.Delta > 0 && (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+            {
+                WorkPlaceCanvas.Width += 5;
+                WorkPlaceCanvas.Height += 5;
+                e.Handled = true;
+            }
+            else
+            {
+                return;
+            }
+
+            WorkPlaceScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Visible;
+            WorkPlaceScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible;
         }
 
         #endregion WorkPlaceCanvas Handle events
@@ -316,6 +321,11 @@ namespace MyFirstWPF
 
                 SelectNodeVm.TextBlock.Margin = new Thickness(cursorPosition.X - NodeRadius, cursorPosition.Y - NodeRadius, 0, 0);
                 SelectNodeVm.Position = new Point(cursorPosition.X, cursorPosition.Y);
+
+
+               // if (cursorPosition.X + NodeRadius >= WorkPlaceWidthMin)
+               // WorkPlaceScrollViewer.ScrollToHorizontalOffset(WorkPlaceScrollViewer.HorizontalOffset + cursorPosition.X + NodeRadius - WorkPlaceWidthMin);
+               // WorkPlaceScrollViewer.ScrollToVerticalOffset(WorkPlaceScrollViewer.VerticalOffset + cursorPosition.Y + NodeRadius - WorkPlaceHeightMin);
             }
 
             e.Handled = true;
@@ -342,7 +352,7 @@ namespace MyFirstWPF
                 return;
             }
 
-            if (!NodeList.Single(n=>n.IsStartNode).NodeRelations.Any())
+            if (!NodeList.Single(n => n.IsStartNode).NodeRelations.Any())
             {
                 MessageBox.Show("Переход из стартового узла обязателен");
                 return;
@@ -472,7 +482,6 @@ namespace MyFirstWPF
 
                     NodeService.SetNodeVmColor(ref nodeVm, border: NodeColors.NormalBorder);
                     SetTextBlockEventHandles(nodeVm.TextBlock);
-                    //   WorkPlaceCanvas.RegisterName(nodeVm.TextBlock.Name, nodeVm.TextBlock);
                     WorkPlaceCanvas.Children.Add(nodeVm.TextBlock);
                     NodeList.Add(node);
                     NodeVmList.Add(nodeVm);
@@ -481,8 +490,8 @@ namespace MyFirstWPF
                 foreach (var item in modelState.EdgeSaveList)
                 {
                     var edgeVm = Mapper.Map(item, new EdgeVm());
-                    var fromNodeVm = NodeVmList.Single(n => n.Id == edgeVm.FromNodeVmId);
-                    var toNodeVm = NodeVmList.Single(n => n.Id == edgeVm.ToNodeVmId);
+                    var fromNodeVm = NodeVmList.Single(n => n.Node.Id == edgeVm.FromNodeVmId);
+                    var toNodeVm = NodeVmList.Single(n => n.Node.Id == edgeVm.ToNodeVmId);
 
                     fromNodeVm.EdgeVmList.Add(edgeVm);
                     toNodeVm.EdgeVmList.Add(edgeVm);
@@ -764,17 +773,6 @@ namespace MyFirstWPF
                     return true;
                 }
             }
-            if (obj is ArrowLine)
-            {
-
-                if (Keyboard.IsKeyDown(Key.D))
-                {
-                    var edgeVm = EdgeVmList.Single(n => Equals(n.ArrowLine, obj as ArrowLine));
-                    DeleteEdge(edgeVm);
-                    return true;
-                }
-            }
-
             if (obj is Canvas)
             {
                 if (Keyboard.IsKeyDown(Key.D))
@@ -808,7 +806,7 @@ namespace MyFirstWPF
 
         // Заполнение грида свзяей
         public void FillDataGrid()
-        {          
+        {
             NodeRelationDataGrid.CancelEdit();
 
             if (SelectNodeVm == null)
@@ -880,5 +878,16 @@ namespace MyFirstWPF
 
         #endregion
 
+        private void WorkPlaceCanvas_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (CanvasSize) return;
+            CanvasSize = true;
+
+            WorkPlaceHeightMin = WorkPlaceCanvas.ActualHeight;
+            WorkPlaceWidthMin = WorkPlaceCanvas.ActualWidth;
+
+            WorkPlaceCanvas.Width = WorkPlaceWidthMin;
+            WorkPlaceCanvas.Height = WorkPlaceHeightMin;
+        }
     }
 }

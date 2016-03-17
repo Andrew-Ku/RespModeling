@@ -16,23 +16,16 @@ namespace MyFirstWPF.Models
 
         public NodeVm()
         {
-            Id = NodeVmCount;
-           // NodeVmCount++;
             EdgeVmList = new List<EdgeVm>();
         }
-        public int Id { get; set; }
 
         [JsonIgnore] 
         public TextBlock TextBlock { get; set; }
 
-
         public Node Node { get; set; }
 
-        public static readonly DependencyProperty PositionProperty =
-         DependencyProperty.Register("Position",
-             typeof(Point), typeof(NodeVm),
-             new FrameworkPropertyMetadata(new Point(),
-                     FrameworkPropertyMetadataOptions.AffectsMeasure));
+        public static readonly DependencyProperty PositionProperty =DependencyProperty.Register("Position",typeof(Point), typeof(NodeVm),
+            new FrameworkPropertyMetadata(new Point(),FrameworkPropertyMetadataOptions.AffectsMeasure));
 
         public Point Position
         {
