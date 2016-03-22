@@ -76,27 +76,30 @@
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Infrastructure\AutoMapperBootstrapper.cs" />
     <Compile Include="Infrastructure\ForGetChar.cs" />
-    <Compile Include="Models\ArrowLine.cs" />
-    <Compile Include="Models\FileSaveModels\EdgeSave.cs" />
-    <Compile Include="Models\EdgeVm.cs" />
-    <Compile Include="Models\Generation\GpssInputModel.cs" />
-    <Compile Include="Models\Node.cs" />
-    <Compile Include="Models\NodeRelation.cs" />
-    <Compile Include="Models\NodeVm.cs" />
-    <Compile Include="Models\FileSaveModels\ModelStateSave.cs" />
-    <Compile Include="Models\FileSaveModels\NodeSave.cs" />
+    <Compile Include="Model\ArrowLine.cs" />
+    <Compile Include="Model\FileSaveModels\EdgeSave.cs" />
+    <Compile Include="Model\EdgeVm.cs" />
+    <Compile Include="Model\Generation\GpssInputModel.cs" />
+    <Compile Include="Model\Node.cs" />
+    <Compile Include="Model\NodeRelation.cs" />
+    <Compile Include="Model\NodeVm.cs" />
+    <Compile Include="Model\FileSaveModels\ModelStateSave.cs" />
+    <Compile Include="Model\FileSaveModels\NodeSave.cs" />
     <Compile Include="Profile\StateSaveProfile.cs" />
     <Compile Include="Profile\NodeProfile.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Services\GenerateService.cs" />
     <Compile Include="Services\FileService.cs" />
     <Compile Include="Services\NodeService.cs" />
-    <Compile Include="StartGpssWindow.xaml.cs">
+    <Compile Include="ViewModel\MainWindowVm.cs" />
+    <Compile Include="ViewModel\StartGpssWindowVm.cs" />
+    <Compile Include="View\StartGpssWindow.xaml.cs">
       <DependentUpon>StartGpssWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Validation\IntNumberValidationRule.cs" />
     <Compile Include="Validation\NotEmptyValidationRule.cs" />
     <Compile Include="Validation\WeightValidationRule.cs" />
-    <Page Include="MainWindow.xaml">
+    <Page Include="View\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -104,11 +107,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="View\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="StartGpssWindow.xaml">
+    <Page Include="View\StartGpssWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -139,7 +142,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Denide.jpg" />
@@ -147,6 +152,7 @@
   <ItemGroup>
     <Resource Include="Images\chrom.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

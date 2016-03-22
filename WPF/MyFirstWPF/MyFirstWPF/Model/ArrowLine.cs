@@ -216,5 +216,11 @@ namespace MyFirstWPF.Models
 
             return pathfig;
         }
+
+        public void ArrowPositionUpdate()
+        {
+            
+        }
+
     }
 }

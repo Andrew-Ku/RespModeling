@@ -44,7 +44,7 @@ namespace MyFirstWPF.Models
                 ArrowLine.X2 = pos.Item2.X;
                 ArrowLine.Y2 = pos.Item2.Y;
             }
-
+            
             if (nodeVm.Equals(ToNodeVm))
             {
                 var pos = NodeService.ReduceArrowLine(ToNodeVm.Position, FromNodeVm.Position);

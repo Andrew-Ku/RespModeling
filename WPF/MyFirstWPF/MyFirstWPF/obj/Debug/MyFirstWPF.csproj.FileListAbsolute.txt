@@ -30,8 +30,6 @@ F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\My
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\MyFirstWPF.exe
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\MyFirstWPF.pdb
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.csprojResolveAssemblyReference.cache
-C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MainWindow.baml
-C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MainWindow.g.cs
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\App.g.cs
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF_MarkupCompile.cache
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF.g.resources
@@ -47,11 +45,13 @@ F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\My
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\Newtonsoft.Json.dll
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\AutoMapper.xml
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\Newtonsoft.Json.xml
-C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\StartGpssWindow.baml
-C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\StartGpssWindow.g.cs
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\StartGpssWindow.baml
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\StartGpssWindow.g.cs
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF_MarkupCompile.lref
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\GeneratedInternalTypeHelper.g.cs
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\GeneratedInternalTypeHelper.g.cs
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF_MarkupCompile.lref
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\View\MainWindow.g.cs
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\View\StartGpssWindow.g.cs
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\View\MainWindow.baml
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\View\StartGpssWindow.baml

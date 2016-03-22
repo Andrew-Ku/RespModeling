@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:validation="clr-namespace:MyFirstWPF.Validation"
         Title="StartGpssWindow" Height="300" Width="300"
-        KeyDown="StartGpssWindow_OnKeyDown">
+        KeyDown="StartGpssWindow_OnKeyDown"
+        Loaded="StartGpssWindow_OnLoaded">
     <DockPanel>
         <Border DockPanel.Dock="Top" BorderThickness="1" BorderBrush="DimGray">
             <Grid MinHeight="50" Background="White">
@@ -39,19 +40,21 @@
             <TextBox Grid.Row="0"  Name="ModelingTimeTextBox" PreviewTextInput="IntNumberValidation" Height="22" 
                              VerticalAlignment="Bottom"
                              MaxLength="7"
-                             Margin="5,1,5,1"
-                             Grid.Column="1"/>
+                             Margin="5,0,5,5"
+                             Grid.Column="1"
+                      Text="{Binding Path=ModelingTime, Mode=TwoWay}"/>
 
             <TextBox Grid.Row="1" Name="ObservationTimeTextBox" PreviewTextInput="IntNumberValidation" Height="22" 
                              VerticalAlignment="Bottom"
                              MaxLength="7"
-                             Margin="5,1,5,1"
+                             Margin="5,0,5,4"
                              Grid.Column="1">
                 <Binding Path="ObservationTime" NotifyOnValidationError="True">
                     <Binding.ValidationRules>
                         <validation:IntNumberValidationRule/>
                         <ExceptionValidationRule/>
                     </Binding.ValidationRules>
+                    <Binding.Mode>TwoWay</Binding.Mode>
                 </Binding>
 
 

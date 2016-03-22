@@ -17,6 +17,7 @@ using Microsoft.Win32;
 using MyFirstWPF.Models;
 using MyFirstWPF.Models.Generation;
 using MyFirstWPF.Services;
+using MyFirstWPF.ViewModel;
 using Path = System.IO.Path;
 
 namespace MyFirstWPF
@@ -28,6 +29,7 @@ namespace MyFirstWPF
     {
         private readonly List<Node> NodeList;
         private readonly string GpssFilesPath;
+        private  StartGpssWindowVm _StartGpssWindowVm;
 
         public StartGpssWindow(List<Node> nodeList)
         {
@@ -36,6 +38,11 @@ namespace MyFirstWPF
             InitializeComponent();
 
             ModelingTimeTextBox.Focus();
+        }
+
+        private void StartGpssWindow_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            _StartGpssWindowVm = DataContext as StartGpssWindowVm;
         }
 
         private void StartGenButton_OnClick(object sender, RoutedEventArgs e)
@@ -51,9 +58,12 @@ namespace MyFirstWPF
                 MessageBox.Show("Все параметры должны быть заданы");
                 return;
             }
+            
+            //var modelingTime = int.Parse(string.Concat(ModelingTimeTextBox.Text.SkipWhile(s => s == '0')));
+            //var observationTime = int.Parse(string.Concat(ObservationTimeTextBox.Text.SkipWhile(s => s == '0')));
+            var modelingTime = _StartGpssWindowVm.ModelingTime;
+            var observationTime = _StartGpssWindowVm.ObservationTime;
 
-            var modelingTime = int.Parse(string.Concat(ModelingTimeTextBox.Text.SkipWhile(s => s == '0')));
-            var observationTime = int.Parse(string.Concat(ObservationTimeTextBox.Text.SkipWhile(s => s == '0')));
 
             if (modelingTime < observationTime)
             {
@@ -117,5 +127,7 @@ namespace MyFirstWPF
             }
                
         }
+
+       
     }
 }

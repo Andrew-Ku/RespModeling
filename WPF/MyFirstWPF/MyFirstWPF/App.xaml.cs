@@ -8,6 +8,7 @@ using System.Windows;
 using AutoMapper;
 using MyFirstWPF.Infrastructure;
 using MyFirstWPF.Profile;
+using MyFirstWPF.ViewModel;
 
 namespace MyFirstWPF
 {
@@ -29,6 +30,13 @@ namespace MyFirstWPF
             }
 
           AutoMapperBootstrapper.Configuration();
+
+          var mw = new MainWindow
+          {
+              DataContext = new MainWindowVm()
+          };
+
+          mw.Show();
         }
     }
 }

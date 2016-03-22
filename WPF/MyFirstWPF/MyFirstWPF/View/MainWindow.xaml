@@ -5,7 +5,8 @@
         xmlns:local="clr-namespace:MyFirstWPF.Models"
         xmlns:validation="clr-namespace:MyFirstWPF.Validation"
         Title="" Height="auto"
-        WindowState="Maximized">
+        WindowState="Maximized"
+    Loaded="MainWindow_OnLoaded">
 
     <Window.Resources>
         <Style TargetType="{x:Type DataGridRow}">

@@ -20,6 +20,7 @@ using MyFirstWPF.Extensions;
 using MyFirstWPF.Infrastructure;
 using MyFirstWPF.Models;
 using MyFirstWPF.Services;
+using MyFirstWPF.ViewModel;
 
 namespace MyFirstWPF
 {
@@ -70,11 +71,22 @@ namespace MyFirstWPF
 
         #endregion Initialization
 
+        #region MainWindow events handler
+
+        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            NodeList = (DataContext as MainWindowVm).NodeList;
+            NodeVmList = (DataContext as MainWindowVm).NodeVmList;
+            EdgeVmList = (DataContext as MainWindowVm).EdgeVmList;
+        }
+
+        #endregion
+
+
         #region WorkPlaceCanvas Handle events
         private void WorkPlaceCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             ClearViewModel();
-
             if (HotKeys(sender))
             {
                 e.Handled = true;
@@ -88,21 +100,31 @@ namespace MyFirstWPF
 
             if (NodeVmList.Any(n => Math.Abs(n.Position.X - cursorPosition.X) < NodeRadius * 2 && Math.Abs(n.Position.Y - cursorPosition.Y) < NodeRadius * 2)) return;
 
-            var paddingLeft = Node.NodeCount > 9 ? 12 : 17;
+             var paddingLeft = Node.NodeCount > 9 ? 12 : 17;
+
+             var node = new Node();
+             NodeList.Add(node);
+
+              var binding = new Binding()
+            {
+                Path = new PropertyPath(string.Format("[{0}].Id", NodeList.IndexOf(node))),
+                Source = NodeList,
+                Mode = BindingMode.TwoWay
+            };
 
             var textBlock = new TextBlock()
             {
-                Name = "TextBlock" + Node.NodeCount,
-                Text = Node.NodeCount.ToString(),
+                Text = (Node.NodeCount-1).ToString(),
                 Height = NodeRadius * 2.0,
                 Width = NodeRadius * 2.0,
                 Padding = new Thickness(paddingLeft, NodeRadius / 2.0, 0, 0),
-                Margin = new Thickness(cursorPosition.X - NodeRadius, cursorPosition.Y - NodeRadius, 0.0, 0.0)
+                Margin = new Thickness(cursorPosition.X - NodeRadius, cursorPosition.Y - NodeRadius, 0.0, 0.0),
             };
+
+           textBlock.SetBinding(TextBlock.TextProperty, binding);
 
             SetTextBlockEventHandles(textBlock);
 
-            var node = new Node();
             var nodeVm = new NodeVm()
             {
                 TextBlock = textBlock,
@@ -110,7 +132,7 @@ namespace MyFirstWPF
                 Position = cursorPosition
             };
 
-            NodeList.Add(node);
+         
             NodeVmList.Add(nodeVm);
             NodeService.SetNodeVmColor(ref nodeVm, border: NodeColors.NormalBorder);
             WorkPlaceCanvas.Children.Add(nodeVm.TextBlock);
@@ -138,7 +160,7 @@ namespace MyFirstWPF
                     WorkPlaceScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
                     return;
                 }
-                   
+
                 WorkPlaceCanvas.Width -= 5;
                 WorkPlaceCanvas.Height -= 5;
             }
@@ -323,9 +345,9 @@ namespace MyFirstWPF
                 SelectNodeVm.Position = new Point(cursorPosition.X, cursorPosition.Y);
 
 
-               // if (cursorPosition.X + NodeRadius >= WorkPlaceWidthMin)
-               // WorkPlaceScrollViewer.ScrollToHorizontalOffset(WorkPlaceScrollViewer.HorizontalOffset + cursorPosition.X + NodeRadius - WorkPlaceWidthMin);
-               // WorkPlaceScrollViewer.ScrollToVerticalOffset(WorkPlaceScrollViewer.VerticalOffset + cursorPosition.Y + NodeRadius - WorkPlaceHeightMin);
+                // if (cursorPosition.X + NodeRadius >= WorkPlaceWidthMin)
+                // WorkPlaceScrollViewer.ScrollToHorizontalOffset(WorkPlaceScrollViewer.HorizontalOffset + cursorPosition.X + NodeRadius - WorkPlaceWidthMin);
+                // WorkPlaceScrollViewer.ScrollToVerticalOffset(WorkPlaceScrollViewer.VerticalOffset + cursorPosition.Y + NodeRadius - WorkPlaceHeightMin);
             }
 
             e.Handled = true;
@@ -368,7 +390,8 @@ namespace MyFirstWPF
 
             var genWindow = new StartGpssWindow(NodeList)
             {
-                WindowStartupLocation = WindowStartupLocation.CenterScreen
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                DataContext = new StartGpssWindowVm()
             };
             genWindow.ShowDialog();
 
@@ -422,6 +445,7 @@ namespace MyFirstWPF
             }
 
             ChangeNodeId(SelectNodeVm.Node.Id, number);
+         
             SelectNodeVm.Node.IsStartNode = StartNodeCheckBox.IsChecked.GetValueOrDefault();
             SelectNodeVm.Node.IsRejectionNode = RejectionNodeCheckBox.IsChecked.GetValueOrDefault();
 
@@ -709,7 +733,7 @@ namespace MyFirstWPF
         {
             var node = NodeList.Single(n => n.Id == oldId);
             var nodeVm = NodeVmList.Single(nv => nv.Node.Equals(node));
-            nodeVm.TextBlock.Name = "TextBlock" + newId;
+          
             nodeVm.TextBlock.Text = newId.ToString();
             var paddingLeft = newId > 9 ? 12 : 17;
             nodeVm.TextBlock.Padding = new Thickness(paddingLeft, NodeRadius / 2.0, 0, 0);
@@ -843,12 +867,6 @@ namespace MyFirstWPF
         #endregion Helpful methods
 
 
-        #region MainWindow events handler
-
-
-        #endregion
-
-
         #region NodeRelationDataGrid events handler
 
         // Обработчик для кнопки delete. Удаление визуальных связей при удаление связей из грида 
@@ -889,5 +907,7 @@ namespace MyFirstWPF
             WorkPlaceCanvas.Width = WorkPlaceWidthMin;
             WorkPlaceCanvas.Height = WorkPlaceHeightMin;
         }
+
+
     }
 }
