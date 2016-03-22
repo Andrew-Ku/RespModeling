@@ -20,6 +20,7 @@ using MyFirstWPF.Extensions;
 using MyFirstWPF.Infrastructure;
 using MyFirstWPF.Models;
 using MyFirstWPF.Services;
+using MyFirstWPF.Services.Interfaces;
 
 namespace MyFirstWPF
 {
@@ -31,7 +32,7 @@ namespace MyFirstWPF
         #region Initialization
 
         private readonly NodeService _nodeService;
-        private readonly FileService _fileService;
+        private readonly IFileService _fileService;
 
         private readonly string JsonFilesPath;
 
@@ -51,7 +52,7 @@ namespace MyFirstWPF
         public MainWindow()
         {
             _nodeService = new NodeService();
-            _fileService = new FileService();
+            _fileService = AutofacBootstrapper.Resolve<IFileService>();
 
             NodeVmList = new List<NodeVm>();
             NodeList = new List<Node>();
@@ -112,7 +113,7 @@ namespace MyFirstWPF
 
             NodeList.Add(node);
             NodeVmList.Add(nodeVm);
-            NodeService.SetNodeVmColor(ref nodeVm, border: NodeColors.NormalBorder);
+            _nodeService.SetNodeVmColor(ref nodeVm, border: NodeColors.NormalBorder);
             WorkPlaceCanvas.Children.Add(nodeVm.TextBlock);
             UpdateModelInfo();
 
@@ -138,7 +139,7 @@ namespace MyFirstWPF
                     WorkPlaceScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
                     return;
                 }
-                   
+
                 WorkPlaceCanvas.Width -= 5;
                 WorkPlaceCanvas.Height -= 5;
             }
@@ -164,7 +165,7 @@ namespace MyFirstWPF
         private void TextBlock_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
 
-            NodeService.SetNodeVmColor(ref StartNodeVmEdge);
+            _nodeService.SetNodeVmColor(ref StartNodeVmEdge);
 
             #region Создание связи
 
@@ -173,7 +174,7 @@ namespace MyFirstWPF
                 var nodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
                 if (nodeVm == null || Equals(StartNodeVmEdge, nodeVm))
                 {
-                    NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
+                    _nodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
                     return;
                 }
                 else if (StartNodeVmEdge == null)
@@ -181,7 +182,7 @@ namespace MyFirstWPF
                     StartNodeVmEdge = nodeVm;
                     SelectNodeVm = nodeVm;
                     FillNodeEditFields(ref SelectNodeVm);
-                    NodeService.SetNodeVmColor(ref StartNodeVmEdge, border: NodeColors.EdgeCreateBorder);
+                    _nodeService.SetNodeVmColor(ref StartNodeVmEdge, border: NodeColors.EdgeCreateBorder);
 
                 }
                 else
@@ -189,7 +190,7 @@ namespace MyFirstWPF
                     // Есть ли такая связь
                     if (EdgeVmList.Any(ed => ed.FromNodeVm.Equals(StartNodeVmEdge) && ed.ToNodeVm.Equals(nodeVm)))
                     {
-                        NodeService.SetNodeVmColor(ref StartNodeVmEdge);
+                        _nodeService.SetNodeVmColor(ref StartNodeVmEdge);
                         return;
                     }
                     // Есть ли обратная связь
@@ -199,7 +200,6 @@ namespace MyFirstWPF
                         EdgeVmList.Single(ed => ed.FromNodeVm.Equals(nodeVm) && ed.ToNodeVm.Equals(StartNodeVmEdge))
                             .ArrowLine.ArrowEnds = ArrowEnds.Both;
 
-
                         StartNodeVmEdge.Node.NodeRelations.Add(new NodeRelation()
                         {
                             NodeId = nodeVm.Node.Id,
@@ -207,7 +207,8 @@ namespace MyFirstWPF
                         });
 
 
-                        NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
+                        _nodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
+                        FillDataGrid();
                         UpdateModelInfo();
                         return;
                     }
@@ -218,33 +219,14 @@ namespace MyFirstWPF
                         Weight = 1
                     });
 
-                    var edgePos = NodeService.ReduceArrowLine(StartNodeVmEdge.Position, nodeVm.Position);
-
                     var edgeVm = new EdgeVm()
                     {
                         FromNodeVmId = StartNodeVmEdge.Node.Id,
                         FromNodeVm = StartNodeVmEdge,
                         ToNodeVmId = nodeVm.Node.Id,
                         ToNodeVm = nodeVm,
-                        FromWeightLabel = new Label()
+                        ArrowLine = new ArrowLine(StartNodeVmEdge.Position, nodeVm.Position)
                         {
-                            Content = StartNodeVmEdge.Node.Id,
-                            Margin =
-                                new Thickness(StartNodeVmEdge.Position.X + 10, StartNodeVmEdge.Position.Y + 10, 0, 0)
-                        },
-                        ToWeightLabel = new Label()
-                        {
-                            Content = "",
-                            Margin =
-                                new Thickness(StartNodeVmEdge.Position.X + 10, StartNodeVmEdge.Position.Y + 10, 0, 0)
-                        },
-                        ArrowLine = new ArrowLine()
-                        {
-                            X1 = edgePos.Item1.X,
-                            Y1 = edgePos.Item1.Y,
-                            X2 = edgePos.Item2.X,
-                            Y2 = edgePos.Item2.Y,
-
                             Stroke = EdgeColors.NormalEdge,
                             StrokeThickness = EdgeThickness.NormalThickness
                         }
@@ -252,10 +234,9 @@ namespace MyFirstWPF
 
                     StartNodeVmEdge.EdgeVmList.Add(edgeVm);
                     nodeVm.EdgeVmList.Add(edgeVm);
-
                     EdgeVmList.Add(edgeVm);
                     WorkPlaceCanvas.Children.Add(edgeVm.ArrowLine);
-                    NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
+                    _nodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
                     UpdateModelInfo();
                     FillDataGrid();
                 }
@@ -268,9 +249,9 @@ namespace MyFirstWPF
 
         private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
-            NodeService.SetNodeVmColor(ref SelectNodeVm);
-            NodeService.SetEdgeVmColor(ref EditEdgeVm, true);
+            _nodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
+            _nodeService.SetNodeVmColor(ref SelectNodeVm);
+            _nodeService.SetEdgeVmColor(ref EditEdgeVm, true);
 
             if (HotKeys(sender))
             {
@@ -283,13 +264,13 @@ namespace MyFirstWPF
                 CurrPosition = e.GetPosition(WorkPlaceCanvas);
                 MoveFlag = true;
                 SelectNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
-                NodeService.SetNodeVmColor(ref SelectNodeVm, border: NodeColors.MoveNodeBorder);
+                _nodeService.SetNodeVmColor(ref SelectNodeVm, border: NodeColors.MoveNodeBorder);
                 Mouse.Capture(SelectNodeVm.TextBlock);
             }
             //  if (EditModeRadioButton.IsChecked == true)
             {
                 //  SelectNodeVm = NodeVmList.Single(n => Equals(n.TextBlock, sender));
-                NodeService.SetNodeVmColor(ref SelectNodeVm, border: NodeColors.EditNodeBorder);
+                _nodeService.SetNodeVmColor(ref SelectNodeVm, border: NodeColors.EditNodeBorder);
 
                 FillNodeEditFields(ref SelectNodeVm);
 
@@ -303,7 +284,7 @@ namespace MyFirstWPF
             if (SelectNodeVm == null) return;
             Mouse.Capture(null);
             MoveFlag = false;
-            NodeService.SetNodeVmColor(ref SelectNodeVm, border: NodeColors.NormalBorder);
+            _nodeService.SetNodeVmColor(ref SelectNodeVm, border: NodeColors.NormalBorder);
             e.Handled = true;
         }
 
@@ -321,11 +302,6 @@ namespace MyFirstWPF
 
                 SelectNodeVm.TextBlock.Margin = new Thickness(cursorPosition.X - NodeRadius, cursorPosition.Y - NodeRadius, 0, 0);
                 SelectNodeVm.Position = new Point(cursorPosition.X, cursorPosition.Y);
-
-
-               // if (cursorPosition.X + NodeRadius >= WorkPlaceWidthMin)
-               // WorkPlaceScrollViewer.ScrollToHorizontalOffset(WorkPlaceScrollViewer.HorizontalOffset + cursorPosition.X + NodeRadius - WorkPlaceWidthMin);
-               // WorkPlaceScrollViewer.ScrollToVerticalOffset(WorkPlaceScrollViewer.VerticalOffset + cursorPosition.Y + NodeRadius - WorkPlaceHeightMin);
             }
 
             e.Handled = true;
@@ -357,7 +333,6 @@ namespace MyFirstWPF
                 MessageBox.Show("Переход из стартового узла обязателен");
                 return;
             }
-
 
             var relationNodes = NodeList.SelectMany(n => n.NodeRelations).Select(r => r.NodeId).ToList();
             if (NodeList.Any(node => !relationNodes.Contains(node.Id) && !node.NodeRelations.Any()))
@@ -415,9 +390,9 @@ namespace MyFirstWPF
                 var oldStartNode = NodeList.Single(n => n.IsStartNode);
                 oldStartNode.IsStartNode = false;
                 var oldStartNodeVm = NodeVmList.Single(nv => nv.Node.Equals(oldStartNode));
-                oldStartNodeVm.TextBlock.Background = new VisualBrush(NodeService.GetEllipse(NodeRadius, NodeColors.NormalBackground, NodeColors.NormalBorder));
+                oldStartNodeVm.TextBlock.Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, NodeColors.NormalBackground, NodeColors.NormalBorder));
                 var newStartNodeVm = NodeVmList.Single(nv => nv.Equals(SelectNodeVm));
-                newStartNodeVm.TextBlock.Background = new VisualBrush(NodeService.GetEllipse(NodeRadius, NodeColors.StartNodeBackground, NodeColors.NormalBorder));
+                newStartNodeVm.TextBlock.Background = new VisualBrush(_nodeService.GetEllipse(NodeRadius, NodeColors.StartNodeBackground, NodeColors.NormalBorder));
 
             }
 
@@ -426,7 +401,7 @@ namespace MyFirstWPF
             SelectNodeVm.Node.IsRejectionNode = RejectionNodeCheckBox.IsChecked.GetValueOrDefault();
 
             NodeNumberTextBox.Clear();
-            NodeService.SetNodeVmColor(ref SelectNodeVm, border: NodeColors.NormalBorder);
+            _nodeService.SetNodeVmColor(ref SelectNodeVm, border: NodeColors.NormalBorder);
         }
 
         private void OpenButton_OnClick(object sender, RoutedEventArgs e)
@@ -450,7 +425,7 @@ namespace MyFirstWPF
 
             if (fileDialog.ShowDialog().GetValueOrDefault())
             {
-                var modelState = _fileService.OpenFile(fileDialog.FileName);
+                var modelState = _fileService.OpenFile<ModelStateSave>(fileDialog.FileName);
 
                 if (modelState == null)
                 {
@@ -480,7 +455,7 @@ namespace MyFirstWPF
                         Margin = new Thickness(item.Position.X - NodeRadius, item.Position.Y - NodeRadius, 0.0, 0.0),
                     };
 
-                    NodeService.SetNodeVmColor(ref nodeVm, border: NodeColors.NormalBorder);
+                    _nodeService.SetNodeVmColor(ref nodeVm, border: NodeColors.NormalBorder);
                     SetTextBlockEventHandles(nodeVm.TextBlock);
                     WorkPlaceCanvas.Children.Add(nodeVm.TextBlock);
                     NodeList.Add(node);
@@ -672,12 +647,12 @@ namespace MyFirstWPF
             if (nodeVm.Equals(SelectNodeVm))
             {
                 NodeNumberTextBox.Clear();
-                NodeService.SetNodeVmColor(ref SelectNodeVm, true);
+                _nodeService.SetNodeVmColor(ref SelectNodeVm, true);
                 FillDataGrid();
             }
 
 
-            NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
+            _nodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
         }
 
 
@@ -738,8 +713,8 @@ namespace MyFirstWPF
 
         private void ClearViewModel()
         {
-            NodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
-            NodeService.SetEdgeVmColor(ref EditEdgeVm, true);
+            _nodeService.SetNodeVmColor(ref StartNodeVmEdge, true);
+            _nodeService.SetEdgeVmColor(ref EditEdgeVm, true);
         }
 
         public void SetTextBlockEventHandles(TextBlock textBlock)
@@ -769,7 +744,7 @@ namespace MyFirstWPF
                     if (nodeVm.Node.IsStartNode) return false;
 
                     nodeVm.Node.IsRejectionNode = !nodeVm.Node.IsRejectionNode;
-                    NodeService.SetNodeVmColor(ref nodeVm);
+                    _nodeService.SetNodeVmColor(ref nodeVm);
                     return true;
                 }
             }
@@ -863,8 +838,8 @@ namespace MyFirstWPF
                     var edge = EdgeVmList.Single(c => c.FromNodeVm.Node.Id == SelectNodeVm.Node.Id && c.ToNodeVm.Node.Id == id || c.ToNodeVm.Node.Id == SelectNodeVm.Node.Id && c.FromNodeVm.Node.Id == id);
                     if (edge.ArrowLine.ArrowEnds == ArrowEnds.Both)
                     {
-                        edge.ArrowLine.ArrowEnds = NodeService.VectorLen(SelectNodeVm.Position, new Point(edge.ArrowLine.X1, edge.ArrowLine.Y1)) >
-                                                   NodeService.VectorLen(SelectNodeVm.Position, new Point(edge.ArrowLine.X2, edge.ArrowLine.Y2)) ? ArrowEnds.End : ArrowEnds.Start;
+                        edge.ArrowLine.ArrowEnds = MathService.VectorLen(SelectNodeVm.Position, new Point(edge.ArrowLine.X1, edge.ArrowLine.Y1)) >
+                                                   MathService.VectorLen(SelectNodeVm.Position, new Point(edge.ArrowLine.X2, edge.ArrowLine.Y2)) ? ArrowEnds.End : ArrowEnds.Start;
                     }
                     else
                     {

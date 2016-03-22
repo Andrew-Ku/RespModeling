@@ -38,6 +38,9 @@
     <Reference Include="alglibnet2">
       <HintPath>..\packages\alglibnet2.0.0.0\lib\alglibnet2.dll</HintPath>
     </Reference>
+    <Reference Include="Autofac">
+      <HintPath>..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="AutoMapper">
       <HintPath>..\packages\AutoMapper.4.2.1\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
@@ -74,6 +77,7 @@
     <Compile Include="Consts\NodeColors.cs" />
     <Compile Include="Consts\StartParameters.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
+    <Compile Include="Infrastructure\AutofacBootstrapper.cs" />
     <Compile Include="Infrastructure\AutoMapperBootstrapper.cs" />
     <Compile Include="Infrastructure\ForGetChar.cs" />
     <Compile Include="Models\ArrowLine.cs" />
@@ -87,8 +91,11 @@
     <Compile Include="Models\FileSaveModels\NodeSave.cs" />
     <Compile Include="Profile\StateSaveProfile.cs" />
     <Compile Include="Profile\NodeProfile.cs" />
+    <Compile Include="Services\FileTest.cs" />
     <Compile Include="Services\GenerateService.cs" />
     <Compile Include="Services\FileService.cs" />
+    <Compile Include="Services\Interfaces\IFileService.cs" />
+    <Compile Include="Services\MathService.cs" />
     <Compile Include="Services\NodeService.cs" />
     <Compile Include="StartGpssWindow.xaml.cs">
       <DependentUpon>StartGpssWindow.xaml</DependentUpon>
@@ -139,7 +146,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Denide.jpg" />

@@ -55,3 +55,5 @@ C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF_MarkupCompile.lref
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\GeneratedInternalTypeHelper.g.cs
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\GeneratedInternalTypeHelper.g.cs
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF_MarkupCompile.lref
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\Autofac.dll
+C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\Autofac.xml

@@ -34,7 +34,7 @@ namespace MyFirstWPF.Models
                 SetValue(PositionProperty, value);
                 foreach (var edgeVm in EdgeVmList)
                 {
-                    edgeVm.ArrowLinePositionUpdate(this);
+                    edgeVm.ArrowLine.PositionUpdate(edgeVm.FromNodeVm.Position, edgeVm.ToNodeVm.Position);
                 }
                 
             }
