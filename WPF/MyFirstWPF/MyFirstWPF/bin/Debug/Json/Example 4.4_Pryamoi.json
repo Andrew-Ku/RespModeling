@@ -1,0 +1,233 @@
+{
+	"NodeSaveList" : [{
+			"Id" : 0,
+			"Position" : "462,50.04",
+			"IsStartNode" : true,
+			"IsRejectionNode" : false,
+			"NodeRelations" : [{
+					"NodeId" : 1,
+					"Weight" : 0.04
+				}, {
+					"NodeId" : 2,
+					"Weight" : 0.08
+				}, {
+					"NodeId" : 3,
+					"Weight" : 0.1
+				}
+			],
+			"TextBlockName" : "TextBlock0",
+			"TextBlockText" : "0"
+		}, {
+			"Id" : 1,
+			"Position" : "248,160.04",
+			"IsStartNode" : false,
+			"IsRejectionNode" : false,
+			"NodeRelations" : [{
+					"NodeId" : 0,
+					"Weight" : 2.0
+				}, {
+					"NodeId" : 12,
+					"Weight" : 0.08
+				}, {
+					"NodeId" : 13,
+					"Weight" : 0.1
+				}
+			],
+			"TextBlockName" : "TextBlock1",
+			"TextBlockText" : "1"
+		}, {
+			"Id" : 2,
+			"Position" : "459,166.04",
+			"IsStartNode" : false,
+			"IsRejectionNode" : false,
+			"NodeRelations" : [{
+					"NodeId" : 0,
+					"Weight" : 1.0
+				}, {
+					"NodeId" : 21,
+					"Weight" : 0.04
+				}, {
+					"NodeId" : 23,
+					"Weight" : 0.1
+				}
+			],
+			"TextBlockName" : "TextBlock2",
+			"TextBlockText" : "2"
+		}, {
+			"Id" : 3,
+			"Position" : "667,167.04",
+			"IsStartNode" : false,
+			"IsRejectionNode" : false,
+			"NodeRelations" : [{
+					"NodeId" : 0,
+					"Weight" : 4.0
+				}, {
+					"NodeId" : 31,
+					"Weight" : 0.04
+				}, {
+					"NodeId" : 32,
+					"Weight" : 0.08
+				}
+			],
+			"TextBlockName" : "TextBlock3",
+			"TextBlockText" : "3"
+		}, {
+			"Id" : 12,
+			"Position" : "198,281.04",
+			"IsStartNode" : false,
+			"IsRejectionNode" : true,
+			"NodeRelations" : [{
+					"NodeId" : 1,
+					"Weight" : 1.0
+				}
+			],
+			"TextBlockName" : "TextBlock12",
+			"TextBlockText" : "12"
+		}, {
+			"Id" : 13,
+			"Position" : "277,278.04",
+			"IsStartNode" : false,
+			"IsRejectionNode" : true,
+			"NodeRelations" : [{
+					"NodeId" : 1,
+					"Weight" : 4.0
+				}
+			],
+			"TextBlockName" : "TextBlock13",
+			"TextBlockText" : "13"
+		}, {
+			"Id" : 21,
+			"Position" : "413,288.04",
+			"IsStartNode" : false,
+			"IsRejectionNode" : true,
+			"NodeRelations" : [{
+					"NodeId" : 2,
+					"Weight" : 2.0
+				}
+			],
+			"TextBlockName" : "TextBlock21",
+			"TextBlockText" : "21"
+		}, {
+			"Id" : 23,
+			"Position" : "494.010285036992,289.04",
+			"IsStartNode" : false,
+			"IsRejectionNode" : true,
+			"NodeRelations" : [{
+					"NodeId" : 2,
+					"Weight" : 4.0
+				}
+			],
+			"TextBlockName" : "TextBlock23",
+			"TextBlockText" : "23"
+		}, {
+			"Id" : 31,
+			"Position" : "632,291.04",
+			"IsStartNode" : false,
+			"IsRejectionNode" : true,
+			"NodeRelations" : [{
+					"NodeId" : 3,
+					"Weight" : 2.0
+				}
+			],
+			"TextBlockName" : "TextBlock31",
+			"TextBlockText" : "31"
+		}, {
+			"Id" : 32,
+			"Position" : "711,290.04",
+			"IsStartNode" : false,
+			"IsRejectionNode" : true,
+			"NodeRelations" : [{
+					"NodeId" : 3,
+					"Weight" : 1.0
+				}
+			],
+			"TextBlockName" : "TextBlock32",
+			"TextBlockText" : "32"
+		}
+	],
+	"EdgeSaveList" : [{
+			"Id" : 0,
+			"FromNodeVmId" : 0,
+			"ToNodeVmId" : 1,
+			"X1" : 444.212312574137,
+			"X2" : 265.787687425863,
+			"Y1" : 59.28320381703238,
+			"Y2" : 150.99679618296761,
+			"ArrowEnds" : 3
+		}, {
+			"Id" : 0,
+			"FromNodeVmId" : 0,
+			"ToNodeVmId" : 2,
+			"X1" : 461.48293151153825,
+			"X2" : 459.51706848846175,
+			"Y1" : 70.133314887187666,
+			"Y2" : 146.14668511281232,
+			"ArrowEnds" : 3
+		}, {
+			"Id" : 0,
+			"FromNodeVmId" : 0,
+			"ToNodeVmId" : 3,
+			"X1" : 479.37007472630489,
+			"X2" : 649.62992527369511,
+			"Y1" : 60.053652404769117,
+			"Y2" : 157.22634759523086,
+			"ArrowEnds" : 3
+		}, {
+			"Id" : 0,
+			"FromNodeVmId" : 1,
+			"ToNodeVmId" : 12,
+			"X1" : 240.36196010337349,
+			"X2" : 205.63803989662651,
+			"Y1" : 178.62405654983616,
+			"Y2" : 262.65594345016382,
+			"ArrowEnds" : 3
+		}, {
+			"Id" : 0,
+			"FromNodeVmId" : 1,
+			"ToNodeVmId" : 13,
+			"X1" : 252.77321798038275,
+			"X2" : 272.22678201961725,
+			"Y1" : 179.56205936845396,
+			"Y2" : 258.71794063154607,
+			"ArrowEnds" : 3
+		}, {
+			"Id" : 0,
+			"FromNodeVmId" : 2,
+			"ToNodeVmId" : 21,
+			"X1" : 451.94392210260418,
+			"X2" : 420.05607789739582,
+			"Y1" : 184.85394572787584,
+			"Y2" : 269.42605427212419,
+			"ArrowEnds" : 3
+		}, {
+			"Id" : 0,
+			"FromNodeVmId" : 2,
+			"ToNodeVmId" : 23,
+			"X1" : 464.47525165183185,
+			"X2" : 488.53503338515975,
+			"Y1" : 185.37594602168326,
+			"Y2" : 269.90405397831677,
+			"ArrowEnds" : 3
+		}, {
+			"Id" : 0,
+			"FromNodeVmId" : 3,
+			"ToNodeVmId" : 31,
+			"X1" : 661.5671099588576,
+			"X2" : 637.4328900411424,
+			"Y1" : 186.38795328861889,
+			"Y2" : 271.89204671138111,
+			"ArrowEnds" : 3
+		}, {
+			"Id" : 0,
+			"FromNodeVmId" : 3,
+			"ToNodeVmId" : 32,
+			"X1" : 673.736425727722,
+			"X2" : 704.263574272278,
+			"Y1" : 185.97137192067757,
+			"Y2" : 271.30862807932243,
+			"ArrowEnds" : 3
+		}
+	],
+	"NodeCount" : 33,
+	"IsSetupStartNode" : true
+}

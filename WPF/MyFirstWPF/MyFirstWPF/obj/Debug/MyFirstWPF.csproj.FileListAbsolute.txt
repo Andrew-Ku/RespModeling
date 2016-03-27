@@ -57,3 +57,5 @@ F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\My
 F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\obj\Debug\MyFirstWPF_MarkupCompile.lref
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\Autofac.dll
 C:\GPSS\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\Autofac.xml
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\Autofac.dll
+F:\учеба\Магистратура\Магистерская\GPSS resp\WPF\MyFirstWPF\MyFirstWPF\bin\Debug\Autofac.xml

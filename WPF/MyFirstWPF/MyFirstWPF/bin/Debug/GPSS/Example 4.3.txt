@@ -1,5 +1,5 @@
 ;--Инициализирующий блок----------------
-Time EQU 1000000 ; время моелирования
+Time EQU 1111111 ; время моелирования
 True EQU 1
 False EQU 0
 Lambda0_3 EQU 0.04
@@ -29,6 +29,8 @@ StateTimeMat MATRIX ,1,12; матрица для хранения времени
 StateCountMat MATRIX ,1,12; матрица для хранения времени и следующего состояния
 initial x$workTimeAll,0
 initial x$notWorkTimeAll,0
+initial x$CurrentWorkTime,0
+initial x$workTimeTest,0
 initial x$kGotov,0 ; коэффициент готовности
 initial x$CorrectStateId,0 ;Метка для коррекции
 initial x$IsCorrect,0 ; нужна ли коррекция 
@@ -79,10 +81,10 @@ SAVEVALUE prob9,(MX$StateTimeMat(1,10)/x$TimeAll)
 SAVEVALUE prob10,(MX$StateTimeMat(1,11)/x$TimeAll)
 SAVEVALUE prob11,(MX$StateTimeMat(1,12)/x$TimeAll)
 SAVEVALUE kGotov,(x$workTimeAll/(x$notWorkTimeAll+x$workTimeAll))
-SAVEVALUE Tw,(x$workTimeAll/(MX$StateCountMat(1,1)+MX$StateCountMat(1,2)+MX$StateCountMat(1,3)+MX$StateCountMat(1,4)+MX$StateCountMat(1,5)+MX$StateCountMat(1,6)))
 SAVEVALUE T,(x$workTimeAll/(mx$StateCountMat(1,7)+mx$StateCountMat(1,8)+mx$StateCountMat(1,9)+mx$StateCountMat(1,10)+mx$StateCountMat(1,11)+mx$StateCountMat(1,12)))
+SAVEVALUE T_new,(x$workTimeTest/(mx$StateCountMat(1,7)+mx$StateCountMat(1,8)+mx$StateCountMat(1,9)+mx$StateCountMat(1,10)+mx$StateCountMat(1,11)+mx$StateCountMat(1,12)))
 SAVEVALUE Tv,(x$notWorkTimeAll/(mx$StateCountMat(1,7)+mx$StateCountMat(1,8)+mx$StateCountMat(1,9)+mx$StateCountMat(1,10)+mx$StateCountMat(1,11)+mx$StateCountMat(1,12)))
-SAVEVALUE kGotovMid,(x$Tw/(x$Tw+x$Tv))
+SAVEVALUE T_bezOtkaz,(mx$StateTimeMat(1,1)/mx$StateCountMat(1,1)+mx$StateTimeMat(1,2)/mx$StateCountMat(1,2)+mx$StateTimeMat(1,3)/mx$StateCountMat(1,3)+mx$StateTimeMat(1,4)/mx$StateCountMat(1,4)+mx$StateTimeMat(1,5)/mx$StateCountMat(1,5)+mx$StateTimeMat(1,6)/mx$StateCountMat(1,6))
 TERMINATE 1 
 ;--------------------------------------------------------------
 ;--Стартовый блок----------------
@@ -101,6 +103,7 @@ ASSIGN State,MX$NextStateMat(1,2)
 ASSIGN StartTime,C1
 SAVEVALUE CorrectStateId,0
 MSAVEVALUE StateCountMat+,1,1,1
+SAVEVALUE CurrentWorkTime+,p$Time
 TRANSFER ,DevSMet
 ReturnState0Met MSAVEVALUE StateTimeMat+,1,1,p$Time
 TRANSFER ,p$State
@@ -114,6 +117,7 @@ ASSIGN Time,MX$NextStateMat(1,1)
 ASSIGN State,MX$NextStateMat(1,2)
 SAVEVALUE CorrectStateId,1
 MSAVEVALUE StateCountMat+,1,2,1
+SAVEVALUE CurrentWorkTime+,p$Time
 TRANSFER ,DevSMet
 ReturnState1Met MSAVEVALUE StateTimeMat+,1,2,p$Time
 TRANSFER ,p$State
@@ -127,6 +131,7 @@ ASSIGN Time,MX$NextStateMat(1,1)
 ASSIGN State,MX$NextStateMat(1,2)
 SAVEVALUE CorrectStateId,2
 MSAVEVALUE StateCountMat+,1,3,1
+SAVEVALUE CurrentWorkTime+,p$Time
 TRANSFER ,DevSMet
 ReturnState2Met MSAVEVALUE StateTimeMat+,1,3,p$Time
 TRANSFER ,p$State
@@ -141,6 +146,7 @@ ASSIGN Time,MX$NextStateMat(1,1)
 ASSIGN State,MX$NextStateMat(1,2)
 SAVEVALUE CorrectStateId,3
 MSAVEVALUE StateCountMat+,1,4,1
+SAVEVALUE CurrentWorkTime+,p$Time
 TRANSFER ,DevSMet
 ReturnState3Met MSAVEVALUE StateTimeMat+,1,4,p$Time
 TRANSFER ,p$State
@@ -155,6 +161,7 @@ ASSIGN Time,MX$NextStateMat(1,1)
 ASSIGN State,MX$NextStateMat(1,2)
 SAVEVALUE CorrectStateId,4
 MSAVEVALUE StateCountMat+,1,5,1
+SAVEVALUE CurrentWorkTime+,p$Time
 TRANSFER ,DevSMet
 ReturnState4Met MSAVEVALUE StateTimeMat+,1,5,p$Time
 TRANSFER ,p$State
@@ -169,6 +176,7 @@ ASSIGN Time,MX$NextStateMat(1,1)
 ASSIGN State,MX$NextStateMat(1,2)
 SAVEVALUE CorrectStateId,5
 MSAVEVALUE StateCountMat+,1,6,1
+SAVEVALUE CurrentWorkTime+,p$Time
 TRANSFER ,DevSMet
 ReturnState5Met MSAVEVALUE StateTimeMat+,1,6,p$Time
 TRANSFER ,p$State
@@ -247,6 +255,8 @@ TRANSFER ,p$State
 ;---------------------------------------------------------------
 ;--Устройство--------------------
 DevMet SEIZE Dev
+ SAVEVALUE workTimeTest+,x$CurrentWorkTime
+SAVEVALUE CurrentWorkTime,0
 ADVANCE p$Time
 RELEASE Dev
 TRANSFER ,p$ReturnState
@@ -288,15 +298,14 @@ END;
 ;--Процедура для коррекции времени ----------------
 PROCEDURE CurrrentRejectProb()
 BEGIN
-TEMPORARY prob;
-RejectByTimeMat[1,2] = RejectByTimeMat[1,2] + RejectByTimeMat[1,1];
+RejectByTimeMat[1,2] = RejectByTimeMat[1,2] + 1;
+RejectByTimeMat[1,3] = RejectByTimeMat[1,3] + RejectByTimeMat[1,1];
 if(RejectByTimeMat[1,1] = 0) THEN Begin
 RejectByTimeMat[1,1] = 0;
 return (0);
 END;
-prob = 1 - (RejectByTimeMat[1,1]/RejectByTimeMat[1,2]);
 RejectByTimeMat[1,1] = 0;
-return (prob);
+return (1);
 END;
 ;--------------------------------------------------------------
 

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autofac;
 using MyFirstWPF.Services;
 using MyFirstWPF.Services.Interfaces;
+using IContainer = Autofac.IContainer;
 
 namespace MyFirstWPF.Infrastructure
 {

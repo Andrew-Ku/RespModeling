@@ -699,6 +699,18 @@ namespace MyFirstWPF
             {
                 relation.NodeId = newId;
             }
+           
+            foreach (var edge in EdgeVmList.Where(e => e.FromNodeVmId == oldId || e.ToNodeVmId == oldId).ToList())
+            {
+                if (edge.FromNodeVmId == oldId)
+                {
+                    edge.FromNodeVmId = newId;
+                }
+                else
+                {
+                    edge.ToNodeVmId = newId;
+                }
+            }
         }
 
         private void ClearModel()
@@ -838,8 +850,17 @@ namespace MyFirstWPF
                     var edge = EdgeVmList.Single(c => c.FromNodeVm.Node.Id == SelectNodeVm.Node.Id && c.ToNodeVm.Node.Id == id || c.ToNodeVm.Node.Id == SelectNodeVm.Node.Id && c.FromNodeVm.Node.Id == id);
                     if (edge.ArrowLine.ArrowEnds == ArrowEnds.Both)
                     {
-                        edge.ArrowLine.ArrowEnds = MathService.VectorLen(SelectNodeVm.Position, new Point(edge.ArrowLine.X1, edge.ArrowLine.Y1)) >
-                                                   MathService.VectorLen(SelectNodeVm.Position, new Point(edge.ArrowLine.X2, edge.ArrowLine.Y2)) ? ArrowEnds.End : ArrowEnds.Start;
+                        if (MathService.VectorLen(SelectNodeVm.Position, new Point(edge.ArrowLine.X1, edge.ArrowLine.Y1)) >
+                            MathService.VectorLen(SelectNodeVm.Position, new Point(edge.ArrowLine.X2, edge.ArrowLine.Y2)))
+                        {
+                            edge.ArrowLine.ArrowEnds = ArrowEnds.End;
+                            SelectNodeVm.Node.NodeRelations.RemoveAll(r => r.NodeId == edge.FromNodeVmId);
+                        }
+                        else
+                        {
+                            edge.ArrowLine.ArrowEnds = ArrowEnds.Start;
+                            SelectNodeVm.Node.NodeRelations.RemoveAll(r => r.NodeId == edge.ToNodeVmId);
+                        }
                     }
                     else
                     {

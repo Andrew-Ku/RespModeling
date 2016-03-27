@@ -16,14 +16,20 @@ namespace MyFirstWPF.Services
     {
         private int maxRelationCount;
         private readonly IFileService _fileService;
+        private readonly Dictionary<int, int> nodeIdDic;
 
         public GenerateService()
         {
             _fileService = AutofacBootstrapper.Resolve<IFileService>();
+            nodeIdDic = new Dictionary<int, int>();
         }
 
         public  void GenerateGpssFile(GpssInputModel model, string path)
         {
+            foreach (var node in model.Nodes)
+            {
+                nodeIdDic.Add(node.Id,model.Nodes.IndexOf(node)+1);
+            }
             var content = model.Nodes.Any(n => n.IsRejectionNode && !n.NodeRelations.Any()) ? NotRestoredDesigner(model) : RestoredDesigner(model);
             _fileService.SaveFile(content, path);
             Process.Start(path);
@@ -47,7 +53,7 @@ namespace MyFirstWPF.Services
             }
 
             result.Append(GetDeviceBlock("Dev"));
-            result.Append(GetDeviceBlock("DevS"));
+            result.Append(GetDeviceBlock("DevS",false));
            result.Append(GetProcedureBlock(model));
 
             return result.ToString();
@@ -78,6 +84,9 @@ namespace MyFirstWPF.Services
 
             result.AppendLine("initial x$workTimeAll,0");
             result.AppendLine("initial x$notWorkTimeAll,0");
+            result.AppendLine("initial x$CurrentWorkTime,0"); // Хранит суммарное время рабочих состояний, после отказа обнуляется
+            result.AppendLine("initial x$workTimeTest,0"); // Тестовое значение наработки на отказ, суммирует x$CurrentWorkTime при отказе
+
             result.AppendLine("initial x$kGotov,0 ; коэффициент готовности");
             result.AppendLine("initial x$CorrectStateId,0 ;Метка для коррекции");
             result.AppendLine("initial x$IsCorrect,0 ; нужна ли коррекция ");
@@ -124,12 +133,18 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private  string GetDeviceBlock(string name)
+        private  string GetDeviceBlock(string name, bool rejectDev = true)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Устройство--------------------");
-
             result.AppendLine(string.Format("{0}Met SEIZE {0}", name));
+
+            if (rejectDev)
+            {
+                result.AppendLine(string.Format(" SAVEVALUE workTimeTest+,x$CurrentWorkTime"));
+                result.AppendLine("SAVEVALUE CurrentWorkTime,0");
+            }
+
             result.AppendLine("ADVANCE p$Time");
             result.AppendLine(string.Format("RELEASE {0}", name));
             result.AppendLine("TRANSFER ,p$ReturnState");
@@ -177,11 +192,13 @@ namespace MyFirstWPF.Services
             result.AppendLine(string.Format("ASSIGN StartTime,C1"));
 
             result.AppendLine(string.Format("SAVEVALUE CorrectStateId,{0}", node.Id));
-            result.AppendLine(string.Format("MSAVEVALUE StateCountMat+,1,{0},1", node.Id + 1));
+            result.AppendLine(string.Format("MSAVEVALUE StateCountMat+,1,{0},1", nodeIdDic[node.Id]));
 
+            if(!node.IsRejectionNode)
+            result.AppendLine(string.Format("SAVEVALUE CurrentWorkTime+,p$Time"));
            
             result.AppendLine(node.IsRejectionNode ? string.Format("TRANSFER ,DevMet") : string.Format("TRANSFER ,DevSMet"));
-            result.AppendLine(string.Format("ReturnState{0}Met MSAVEVALUE StateTimeMat+,1,{1},p$Time", node.Id, node.Id + 1));
+            result.AppendLine(string.Format("ReturnState{0}Met MSAVEVALUE StateTimeMat+,1,{1},p$Time", node.Id, nodeIdDic[node.Id]));
 
             result.AppendLine(string.Format("TRANSFER ,p$State"));
             result.AppendLine(";---------------------------------------------------------------");
@@ -198,19 +215,19 @@ namespace MyFirstWPF.Services
 
             foreach (var node in model.Nodes)
             {
-                sumString.Append(string.Format("MX$StateTimeMat(1,{0})+", node.Id + 1));
+                sumString.Append(string.Format("MX$StateTimeMat(1,{0})+", nodeIdDic[node.Id]));
             }
             sumString.Remove(sumString.Length - 1, 1);
 
             foreach (var node in model.Nodes.Where(n => !n.IsRejectionNode))
             {
-                sumWork.Append(string.Format("MX$StateTimeMat(1,{0})+", node.Id + 1));
+                sumWork.Append(string.Format("MX$StateTimeMat(1,{0})+", nodeIdDic[node.Id]));
             }
             sumWork.Remove(sumWork.Length - 1, 1);
 
             foreach (var node in model.Nodes.Where(n => n.IsRejectionNode))
             {
-                sumNotWork.Append(string.Format("MX$StateTimeMat(1,{0})+", node.Id + 1));
+                sumNotWork.Append(string.Format("MX$StateTimeMat(1,{0})+", nodeIdDic[node.Id]));
             }
             sumNotWork.Remove(sumNotWork.Length - 1, 1);
 
@@ -223,7 +240,7 @@ namespace MyFirstWPF.Services
 
             foreach (var node in model.Nodes)
             {
-                result.AppendLine(string.Format("SAVEVALUE prob{0},(MX$StateTimeMat(1,{1})/x$TimeAll)", node.Id, node.Id + 1));
+                result.AppendLine(string.Format("SAVEVALUE prob{0},(MX$StateTimeMat(1,{1})/x$TimeAll)", node.Id, nodeIdDic[node.Id]));
             }
 
             result.AppendLine(string.Format("SAVEVALUE kGotov,(x$workTimeAll/(x$notWorkTimeAll+x$workTimeAll))"));
@@ -231,21 +248,31 @@ namespace MyFirstWPF.Services
             var sumCountWork = new StringBuilder();
             foreach (var node in model.Nodes.Where(n => !n.IsRejectionNode))
             {
-                sumCountWork.Append(string.Format("MX$StateCountMat(1,{0})+", node.Id + 1));
+                sumCountWork.Append(string.Format("MX$StateCountMat(1,{0})+", nodeIdDic[node.Id]));
             }
             sumCountWork.Remove(sumCountWork.Length - 1, 1);
 
             var sumCountNotWork = new StringBuilder();
             foreach (var node in model.Nodes.Where(n => n.IsRejectionNode))
             {
-                sumCountNotWork.Append(string.Format("mx$StateCountMat(1,{0})+", node.Id + 1));
+                sumCountNotWork.Append(string.Format("mx$StateCountMat(1,{0})+", nodeIdDic[node.Id]));
             }
             sumCountNotWork.Remove(sumCountNotWork.Length - 1, 1);
 
-            result.AppendLine(string.Format("SAVEVALUE Tw,(x$workTimeAll/({0}))", sumCountWork));
+        //    result.AppendLine(string.Format("SAVEVALUE Tw,(x$workTimeAll/({0}))", sumCountWork));
             result.AppendLine(string.Format("SAVEVALUE T,(x$workTimeAll/({0}))", sumCountNotWork));
+            result.AppendLine(string.Format("SAVEVALUE T_new,(x$workTimeTest/({0}))", sumCountNotWork));
+
             result.AppendLine(string.Format("SAVEVALUE Tv,(x$notWorkTimeAll/({0}))", sumCountNotWork));
-            result.AppendLine(string.Format("SAVEVALUE kGotovMid,(x$Tw/(x$Tw+x$Tv))"));
+
+
+            var bezOtkazRab = new StringBuilder();
+            foreach (var node in model.Nodes.Where(n => !n.IsRejectionNode))
+            {
+                bezOtkazRab.Append(string.Format("mx$StateTimeMat(1,{0})/mx$StateCountMat(1,{0})+", nodeIdDic[node.Id]));
+            }
+            bezOtkazRab.Remove(bezOtkazRab.Length - 1, 1);
+            result.AppendLine(string.Format("SAVEVALUE T_bezOtkaz,({0})", bezOtkazRab));
 
             result.AppendLine(string.Format("TERMINATE 1 "));
 
@@ -396,7 +423,7 @@ namespace MyFirstWPF.Services
             result.AppendLine(string.Format(";--Состояние {0}-----------------------", node.Id));
 
             result.AppendLine(string.Format("State{0}Met SAVEVALUE CorrectStateId,{0}", node.Id));
-            result.AppendLine(string.Format("MSAVEVALUE StateCountMat+,1,{0},1", node.Id + 1));
+            result.AppendLine(string.Format("MSAVEVALUE StateCountMat+,1,{0},1", nodeIdDic[node.Id]));
             result.AppendLine(string.Format("MSAVEVALUE RejectByTimeMat+,1,1,1"));
             result.AppendLine(string.Format("SAVEVALUE RejectTime+,(C1-p$StartTime)"));
 
@@ -414,13 +441,13 @@ namespace MyFirstWPF.Services
 
             foreach (var node in model.Nodes)
             {
-                sumString.Append(string.Format("MX$StateTimeMat(1,{0})+", node.Id + 1));
+                sumString.Append(string.Format("MX$StateTimeMat(1,{0})+", nodeIdDic[node.Id]));
             }
             sumString.Remove(sumString.Length - 1, 1);
 
             foreach (var node in model.Nodes.Where(n => !n.IsRejectionNode))
             {
-                sumWork.Append(string.Format("MX$StateTimeMat(1,{0})+", node.Id + 1));
+                sumWork.Append(string.Format("MX$StateTimeMat(1,{0})+", nodeIdDic[node.Id]));
             }
             sumWork.Remove(sumWork.Length - 1, 1);
 
@@ -432,14 +459,14 @@ namespace MyFirstWPF.Services
             var sumCountWork = new StringBuilder();
             foreach (var node in model.Nodes.Where(n => !n.IsRejectionNode))
             {
-                sumCountWork.Append(string.Format("MX$StateCountMat(1,{0})+", node.Id + 1));
+                sumCountWork.Append(string.Format("MX$StateCountMat(1,{0})+", nodeIdDic[node.Id]));
             }
             sumCountWork.Remove(sumCountWork.Length - 1, 1);
 
             var sumCountNotWork = new StringBuilder();
             foreach (var node in model.Nodes.Where(n => n.IsRejectionNode))
             {
-                sumCountNotWork.Append(string.Format("mx$StateCountMat(1,{0})+", node.Id + 1));
+                sumCountNotWork.Append(string.Format("mx$StateCountMat(1,{0})+", nodeIdDic[node.Id]));
             }
             sumCountNotWork.Remove(sumCountNotWork.Length - 1, 1);
            
