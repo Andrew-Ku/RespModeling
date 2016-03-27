@@ -28,9 +28,11 @@ namespace MyFirstWPF
     {
         private readonly List<Node> NodeList;
         private readonly string GpssFilesPath;
+        private readonly GenerateService _generateService;
 
         public StartGpssWindow(List<Node> nodeList)
         {
+            _generateService = new GenerateService();
             NodeList = nodeList;
             GpssFilesPath = Path.Combine(Environment.CurrentDirectory, "GPSS");
             InitializeComponent();
@@ -82,7 +84,7 @@ namespace MyFirstWPF
             if (result == true)
             {
                 var fileName = saveDialog.FileName;
-                GenerateService.GenerateGpssFile(new GpssInputModel
+                _generateService.GenerateGpssFile(new GpssInputModel
                 {
                     Nodes = NodeList,
                     ModelingTime = modelingTime,

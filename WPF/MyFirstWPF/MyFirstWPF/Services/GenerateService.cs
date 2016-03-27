@@ -5,26 +5,33 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MyFirstWPF.Infrastructure;
 using MyFirstWPF.Models;
 using MyFirstWPF.Models.Generation;
+using MyFirstWPF.Services.Interfaces;
 
 namespace MyFirstWPF.Services
 {
     public class GenerateService
     {
-        private static int maxRelationCount;
-        public static void GenerateGpssFile(GpssInputModel model, string path)
-        {
-            var result = model.Nodes.Any(n => n.IsRejectionNode && !n.NodeRelations.Any()) ? NotRestoredDesigner(model) : RestoredDesigner(model);
-           
-            File.WriteAllText(path, result);
-            Process.Start(path);
+        private int maxRelationCount;
+        private readonly IFileService _fileService;
 
+        public GenerateService()
+        {
+            _fileService = AutofacBootstrapper.Resolve<IFileService>();
+        }
+
+        public  void GenerateGpssFile(GpssInputModel model, string path)
+        {
+            var content = model.Nodes.Any(n => n.IsRejectionNode && !n.NodeRelations.Any()) ? NotRestoredDesigner(model) : RestoredDesigner(model);
+            _fileService.SaveFile(content, path);
+            Process.Start(path);
         }
 
         #region Блоки Восстанавливаемые системы
 
-        private static string RestoredDesigner(GpssInputModel model)
+        private  string RestoredDesigner(GpssInputModel model)
         {
             var result = new StringBuilder();
             maxRelationCount = model.Nodes.Max(n => n.NodeRelations.Count);
@@ -47,7 +54,7 @@ namespace MyFirstWPF.Services
         }
 
         // Формируем блок инициализации
-        private static string GetInitializationBlock(GpssInputModel model)
+        private string GetInitializationBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Инициализирующий блок----------------");
@@ -91,7 +98,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private static string GetStartBlock(GpssInputModel model)
+        private  string GetStartBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Стартовый блок----------------");
@@ -104,7 +111,7 @@ namespace MyFirstWPF.Services
 
             return result.ToString();
         }
-        private static string GetInfoBlock()
+        private  string GetInfoBlock()
         {
             var result = new StringBuilder();
             result.AppendLine(";--Непонятный блок----------------");
@@ -117,7 +124,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private static string GetDeviceBlock(string name)
+        private  string GetDeviceBlock(string name)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Устройство--------------------");
@@ -131,7 +138,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private static string GetStateBlock(Node node)
+        private  string GetStateBlock(Node node)
         {
             var result = new StringBuilder();
             var relationCount = node.NodeRelations.Count();
@@ -182,7 +189,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private static string GetFinishBlock(GpssInputModel model)
+        private  string GetFinishBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             var sumString = new StringBuilder();
@@ -247,7 +254,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private static string GetProcedureBlock(GpssInputModel model)
+        private  string GetProcedureBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Блок процедур----------------");
@@ -313,7 +320,7 @@ namespace MyFirstWPF.Services
 
         #region Блоки Невосстанавливаемые системы
 
-        private static string NotRestoredDesigner(GpssInputModel model)
+        private  string NotRestoredDesigner(GpssInputModel model)
         {
             var result = new StringBuilder();
             maxRelationCount = model.Nodes.Max(n => n.NodeRelations.Count);
@@ -336,7 +343,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private static string GetNotRestoredInitializationBlock(GpssInputModel model)
+        private  string GetNotRestoredInitializationBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Инициализирующий блок----------------");
@@ -383,7 +390,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private static string GetNotRestoredStateBlock(Node node)
+        private  string GetNotRestoredStateBlock(Node node)
         {
             var result = new StringBuilder();
             result.AppendLine(string.Format(";--Состояние {0}-----------------------", node.Id));
@@ -399,7 +406,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private static string GetNotRestoredFinishBlock(GpssInputModel model)
+        private  string GetNotRestoredFinishBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             var sumString = new StringBuilder();
@@ -448,7 +455,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private static string GetNotRestoredStartBlock(GpssInputModel model)
+        private  string GetNotRestoredStartBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Стартовый блок----------------");
@@ -462,7 +469,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private static string GetNotRestoredObservTimeBlock(GpssInputModel model)
+        private  string GetNotRestoredObservTimeBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Блок наблюдения----------------");

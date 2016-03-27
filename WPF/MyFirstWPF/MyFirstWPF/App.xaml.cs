@@ -5,9 +5,14 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
+using Autofac;
+using Autofac.Core;
 using AutoMapper;
 using MyFirstWPF.Infrastructure;
 using MyFirstWPF.Profile;
+using MyFirstWPF.Services;
+using MyFirstWPF.Services.Interfaces;
 
 namespace MyFirstWPF
 {
@@ -28,7 +33,17 @@ namespace MyFirstWPF
                 Shutdown();
             }
 
-          AutoMapperBootstrapper.Configuration();
+            AutoMapperBootstrapper.Configuration();
+            AutofacBootstrapper.Configuration();
+
+            var window = new MainWindow();
+            window.Show();
+        }
+
+        private void App_OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            MessageBox.Show("Error: " + e.Exception.Message + "\nStack: " + e.Exception.StackTrace);
+            e.Handled = true;
         }
     }
 }
