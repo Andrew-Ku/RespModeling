@@ -1,0 +1,137 @@
+;--Инициализирующий блок----------------
+Time EQU 1000000 ; время моелирования
+ObservationTime EQU 20 ; время наблюдения
+True EQU 1
+False EQU 0
+Lambda0_1 EQU 1
+Lambda0_2 EQU 1
+Lambda2_0 EQU 1
+
+NextStateMat MATRIX ,1,2; матрица для хранения времени и следующего состояния
+StateTimeMat MATRIX ,1,3; матрица для хранения времени и следующего состояния
+StateCountMat MATRIX ,1,3; матрица для хранения времени и следующего состояния
+RejectByTimeMat MATRIX ,1,3; матрица для хранения времени и следующего состояния
+initial x$CorrectStateId,0 ;Метка для коррекции
+initial x$IsCorrect,0 ; нужна ли коррекция 
+initial x$StartStateMet,State0Met; стартовое состояние
+initial x$ProbRejectByTime,0 ; коэффициент готовности
+initial x$RejectTime,0 ; в готовности
+
+initial x$LambdaTime0_1,0 ; время по интенсивности
+initial x$LambdaTime0_2,0 ; время по интенсивности
+initial x$LambdaTime2_0,0 ; время по интенсивности
+;---------------------------------------------------------------
+;--Непонятный блок----------------
+START 1
+RMULT 1281
+;---------------------------------------------------------------
+;--Конечный блок--------------------
+GENERATE Time
+SAVEVALUE correctTime,(CorrectStateTime(x$CorrectStateId,C1))
+FinishMet SAVEVALUE TimeAll,C1
+SAVEVALUE ProbReject,(1-(x$ProbRejectByTime/mx$RejectByTimeMat(1,2)))
+SAVEVALUE MidRejectTime,(x$RejectTime/mx$RejectByTimeMat(1,3))
+TERMINATE 1 
+;--------------------------------------------------------------
+;--Стартовый блок----------------
+GENERATE	,,,1,
+SEIZE DEV
+RELEASE DEV
+TRANSFER ,x$StartStateMet
+;---------------------------------------------------------------
+;--Блок наблюдения----------------
+GENERATE	ObservationTime,,,,
+SAVEVALUE ProbRejectByTime+,(CurrrentRejectProb())
+Terminate
+;---------------------------------------------------------------
+;--Состояние 0-----------------------
+State0Met SAVEVALUE LambdaTime0_1,(Exponential(1,0,1/Lambda0_1))
+SAVEVALUE LambdaTime0_2,(Exponential(1,0,1/Lambda0_2))
+ASSIGN ReturnState,ReturnState0Met
+SAVEVALUE procHelpfulPar,(ChooseWayProc(x$LambdaTime0_1,State1Met,x$LambdaTime0_2,State2Met))
+ASSIGN Time,MX$NextStateMat(1,1)
+ASSIGN State,MX$NextStateMat(1,2)
+ASSIGN StartTime,C1
+SAVEVALUE CorrectStateId,0
+MSAVEVALUE StateCountMat+,1,1,1
+SAVEVALUE CurrentWorkTime+,p$Time
+TRANSFER ,DevSMet
+ReturnState0Met MSAVEVALUE StateTimeMat+,1,1,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Состояние 1-----------------------
+State1Met SAVEVALUE CorrectStateId,1
+MSAVEVALUE StateCountMat+,1,2,1
+MSAVEVALUE RejectByTimeMat+,1,1,1
+SAVEVALUE RejectTime+,(C1-p$StartTime)
+TRANSFER ,x$StartStateMet
+;---------------------------------------------------------------
+;--Состояние 2-----------------------
+State2Met SAVEVALUE LambdaTime2_0,(Exponential(1,0,1/Lambda2_0))
+ASSIGN ReturnState,ReturnState2Met
+SAVEVALUE procHelpfulPar,(ChooseWayProc(x$LambdaTime2_0,State0Met,999999,999999))
+ASSIGN Time,MX$NextStateMat(1,1)
+ASSIGN State,MX$NextStateMat(1,2)
+SAVEVALUE CorrectStateId,2
+MSAVEVALUE StateCountMat+,1,3,1
+TRANSFER ,DevMet
+ReturnState2Met MSAVEVALUE StateTimeMat+,1,3,p$Time
+TRANSFER ,p$State
+;---------------------------------------------------------------
+;--Устройство--------------------
+DevMet SEIZE Dev
+ SAVEVALUE workTimeTest+,x$CurrentWorkTime
+SAVEVALUE CurrentWorkTime,0
+ADVANCE p$Time
+RELEASE Dev
+TRANSFER ,p$ReturnState
+;---------------------------------------------------------------
+;--Устройство--------------------
+DevSMet SEIZE DevS
+ SAVEVALUE workTimeTest+,x$CurrentWorkTime
+SAVEVALUE CurrentWorkTime,0
+ADVANCE p$Time
+RELEASE DevS
+TRANSFER ,p$ReturnState
+;---------------------------------------------------------------
+;--Блок процедур----------------
+;--Процедура для поиска слудующего состояния ----------------
+PROCEDURE ChooseWayProc(timeArg0,nextStateArg0,timeArg1,nextStateArg1)
+BEGIN
+TEMPORARY minTime,nextState;
+minTime = timeArg0; nextState = nextStateArg0;
+IF (minTime>timeArg1) THEN BEGIN minTime = timeArg1; nextState = nextStateArg1; END;
+NextStateMat[1,1] = minTime; NextStateMat[1,2] = nextState;
+Return (nextState);
+END;
+;--------------------------------------------------------------
+
+;--Процедура для коррекции времени ----------------
+PROCEDURE CorrectStateTime(currentStateArg, endTimeArg)
+BEGIN
+TEMPORARY countState,result;
+countState = 1;
+sumStateTimes = 0;
+WHILE (countState <= 3) DO BEGIN
+sumStateTimes = sumStateTimes + StateTimeMat[1,countState];
+countState = countState+1;
+END;
+StateTimeMat[1, currentStateArg + 1] = StateTimeMat[1, currentStateArg + 1] + endTimeArg-sumStateTimes;
+ Return(StateTimeMat[1, currentStateArg + 1]);
+END;
+;--------------------------------------------------------------
+
+;--Процедура для коррекции времени ----------------
+PROCEDURE CurrrentRejectProb()
+BEGIN
+RejectByTimeMat[1,2] = RejectByTimeMat[1,2] + 1;
+RejectByTimeMat[1,3] = RejectByTimeMat[1,3] + RejectByTimeMat[1,1];
+if(RejectByTimeMat[1,1] = 0) THEN Begin
+RejectByTimeMat[1,1] = 0;
+return (0);
+END;
+RejectByTimeMat[1,1] = 0;
+return (1);
+END;
+;--------------------------------------------------------------
+
