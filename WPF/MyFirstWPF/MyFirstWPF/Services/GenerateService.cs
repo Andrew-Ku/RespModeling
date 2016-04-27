@@ -52,8 +52,8 @@ namespace MyFirstWPF.Services
                 result.Append(GetStateBlock(node));
             }
 
-            result.Append(GetDeviceBlock("Dev"));
-            result.Append(GetDeviceBlock("DevS",false));
+            result.Append(GetDeviceBlock("NotWorkDev"));
+            result.Append(GetDeviceBlock("WorkDev", false));
            result.Append(GetProcedureBlock(model));
 
             return result.ToString();
@@ -112,8 +112,8 @@ namespace MyFirstWPF.Services
             var result = new StringBuilder();
             result.AppendLine(";--Стартовый блок----------------");
             result.AppendLine("GENERATE	,,,1,");
-            result.AppendLine("SEIZE DEV");
-            result.AppendLine("RELEASE DEV");
+            result.AppendLine("SEIZE NotWorkDev");
+            result.AppendLine("RELEASE NotWorkDev");
             result.AppendLine(string.Format("TRANSFER ,State{0}Met", model.Nodes.Single(n => n.IsStartNode).Id));
 
             result.AppendLine(";---------------------------------------------------------------");
@@ -196,8 +196,8 @@ namespace MyFirstWPF.Services
 
             if(!node.IsRejectionNode)
             result.AppendLine(string.Format("SAVEVALUE CurrentWorkTime+,p$Time"));
-           
-            result.AppendLine(node.IsRejectionNode ? string.Format("TRANSFER ,DevMet") : string.Format("TRANSFER ,DevSMet"));
+
+            result.AppendLine(node.IsRejectionNode ? string.Format("TRANSFER ,NotWorkDevMet") : string.Format("TRANSFER ,WorkDevMet"));
             result.AppendLine(string.Format("ReturnState{0}Met MSAVEVALUE StateTimeMat+,1,{1},p$Time", node.Id, nodeIdDic[node.Id]));
 
             result.AppendLine(string.Format("TRANSFER ,p$State"));
@@ -294,7 +294,7 @@ namespace MyFirstWPF.Services
 
             }
 
-            result.AppendLine(string.Format("PROCEDURE ChooseWayProc({0})", procArgs.Remove(procArgs.Length - 1, 1)));
+            result.AppendLine(string.Format("PROCEDURE ChooseNextStateProc({0})", procArgs.Remove(procArgs.Length - 1, 1)));
             result.AppendLine(string.Format("BEGIN"));
             result.AppendLine(string.Format("TEMPORARY minTime,nextState;"));
             result.AppendLine(string.Format("minTime = timeArg0; nextState = nextStateArg0;"));
@@ -363,8 +363,8 @@ namespace MyFirstWPF.Services
                 result.Append(node.NodeRelations.Any() ? GetStateBlock(node) : GetNotRestoredStateBlock(node));
             }
 
-            result.Append(GetDeviceBlock("Dev"));
-            result.Append(GetDeviceBlock("DevS"));
+            result.Append(GetDeviceBlock("NotWorkDev"));
+            result.Append(GetDeviceBlock("WorkDev"));
             result.Append(GetProcedureBlock(model));
 
             return result.ToString();
@@ -487,8 +487,8 @@ namespace MyFirstWPF.Services
             var result = new StringBuilder();
             result.AppendLine(";--Стартовый блок----------------");
             result.AppendLine("GENERATE	,,,1,");
-            result.AppendLine("SEIZE DEV");
-            result.AppendLine("RELEASE DEV");
+            result.AppendLine("SEIZE NotWorkDev");
+            result.AppendLine("RELEASE NotWorkDev");
             result.AppendLine(string.Format("TRANSFER ,x$StartStateMet"));
 
             result.AppendLine(";---------------------------------------------------------------");
