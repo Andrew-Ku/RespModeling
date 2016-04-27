@@ -24,11 +24,11 @@ namespace MyFirstWPF.Services
             nodeIdDic = new Dictionary<int, int>();
         }
 
-        public  void GenerateGpssFile(GpssInputModel model, string path)
+        public void GenerateGpssFile(GpssInputModel model, string path)
         {
             foreach (var node in model.Nodes)
             {
-                nodeIdDic.Add(node.Id,model.Nodes.IndexOf(node)+1);
+                nodeIdDic.Add(node.Id, model.Nodes.IndexOf(node) + 1);
             }
             var content = model.Nodes.Any(n => n.IsRejectionNode && !n.NodeRelations.Any()) ? NotRestoredDesigner(model) : RestoredDesigner(model);
             _fileService.SaveFile(content, path);
@@ -37,7 +37,7 @@ namespace MyFirstWPF.Services
 
         #region Блоки Восстанавливаемые системы
 
-        private  string RestoredDesigner(GpssInputModel model)
+        private string RestoredDesigner(GpssInputModel model)
         {
             var result = new StringBuilder();
             maxRelationCount = model.Nodes.Max(n => n.NodeRelations.Count);
@@ -54,7 +54,7 @@ namespace MyFirstWPF.Services
 
             result.Append(GetDeviceBlock("NotWorkDev"));
             result.Append(GetDeviceBlock("WorkDev", false));
-           result.Append(GetProcedureBlock(model));
+            result.Append(GetProcedureBlock(model));
 
             return result.ToString();
         }
@@ -107,7 +107,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private  string GetStartBlock(GpssInputModel model)
+        private string GetStartBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Стартовый блок----------------");
@@ -120,7 +120,7 @@ namespace MyFirstWPF.Services
 
             return result.ToString();
         }
-        private  string GetInfoBlock()
+        private string GetInfoBlock()
         {
             var result = new StringBuilder();
             result.AppendLine(";--Непонятный блок----------------");
@@ -133,7 +133,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private  string GetDeviceBlock(string name, bool rejectDev = true)
+        private string GetDeviceBlock(string name, bool rejectDev = true)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Устройство--------------------");
@@ -153,7 +153,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private  string GetStateBlock(Node node)
+        private string GetStateBlock(Node node)
         {
             var result = new StringBuilder();
             var relationCount = node.NodeRelations.Count();
@@ -167,7 +167,7 @@ namespace MyFirstWPF.Services
                     : string.Format("SAVEVALUE LambdaTime{0}_{1},(Exponential(1,0,1/Lambda{0}_{1}))", node.Id,
                         relation.NodeId));
             }
-            
+
             result.AppendLine(string.Format("ASSIGN ReturnState,ReturnState{0}Met", node.Id));
 
             var procArgs = new StringBuilder();
@@ -184,18 +184,18 @@ namespace MyFirstWPF.Services
                 }
             }
 
-            result.AppendLine(string.Format("SAVEVALUE procHelpfulPar,(ChooseWayProc({0}))", procArgs.Remove(procArgs.Length - 1, 1)));
+            result.AppendLine(string.Format("SAVEVALUE procHelpfulPar,(ChooseNextStateProc({0}))", procArgs.Remove(procArgs.Length - 1, 1)));
             result.AppendLine(string.Format("ASSIGN Time,MX$NextStateMat(1,1)"));
             result.AppendLine(string.Format("ASSIGN State,MX$NextStateMat(1,2)"));
-            
-            if(node.IsStartNode)
-            result.AppendLine(string.Format("ASSIGN StartTime,C1"));
+
+            if (node.IsStartNode)
+                result.AppendLine(string.Format("ASSIGN StartTime,C1"));
 
             result.AppendLine(string.Format("SAVEVALUE CorrectStateId,{0}", node.Id));
             result.AppendLine(string.Format("MSAVEVALUE StateCountMat+,1,{0},1", nodeIdDic[node.Id]));
 
-            if(!node.IsRejectionNode)
-            result.AppendLine(string.Format("SAVEVALUE CurrentWorkTime+,p$Time"));
+            if (!node.IsRejectionNode)
+                result.AppendLine(string.Format("SAVEVALUE CurrentWorkTime+,p$Time"));
 
             result.AppendLine(node.IsRejectionNode ? string.Format("TRANSFER ,NotWorkDevMet") : string.Format("TRANSFER ,WorkDevMet"));
             result.AppendLine(string.Format("ReturnState{0}Met MSAVEVALUE StateTimeMat+,1,{1},p$Time", node.Id, nodeIdDic[node.Id]));
@@ -206,7 +206,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private  string GetFinishBlock(GpssInputModel model)
+        private string GetFinishBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             var sumString = new StringBuilder();
@@ -231,7 +231,7 @@ namespace MyFirstWPF.Services
             }
             sumNotWork.Remove(sumNotWork.Length - 1, 1);
 
-            result.AppendLine(";--Конечный блок--------------------");
+            result.AppendLine(";--Результирующий блок--------------------");
             result.AppendLine(string.Format("GENERATE Time"));
             result.AppendLine(string.Format("SAVEVALUE correctTime,(CorrectStateTime(x$CorrectStateId,C1))"));
             result.AppendLine(string.Format("FinishMet SAVEVALUE TimeAll,({0})", sumString));
@@ -259,7 +259,7 @@ namespace MyFirstWPF.Services
             }
             sumCountNotWork.Remove(sumCountNotWork.Length - 1, 1);
 
-        //    result.AppendLine(string.Format("SAVEVALUE Tw,(x$workTimeAll/({0}))", sumCountWork));
+            //    result.AppendLine(string.Format("SAVEVALUE Tw,(x$workTimeAll/({0}))", sumCountWork));
             result.AppendLine(string.Format("SAVEVALUE T,(x$workTimeAll/({0}))", sumCountNotWork));
             result.AppendLine(string.Format("SAVEVALUE T_new,(x$workTimeTest/({0}))", sumCountNotWork));
 
@@ -281,7 +281,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private  string GetProcedureBlock(GpssInputModel model)
+        private string GetProcedureBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Блок процедур----------------");
@@ -326,13 +326,12 @@ namespace MyFirstWPF.Services
             result.AppendLine(";--------------------------------------------------------------");
             result.AppendLine("");
 
-            result.AppendLine(";--Процедура для коррекции времени ----------------");
-            result.AppendLine(string.Format("PROCEDURE CurrrentRejectProb()"));
+            result.AppendLine(";--Процедура для определения данных связанных с отказами ----------------");
+            result.AppendLine(string.Format("PROCEDURE IsRejectByObservationTime()"));
             result.AppendLine(string.Format("BEGIN"));
             result.AppendLine(string.Format("RejectByTimeMat[1,2] = RejectByTimeMat[1,2] + 1;"));
             result.AppendLine(string.Format("RejectByTimeMat[1,3] = RejectByTimeMat[1,3] + RejectByTimeMat[1,1];"));
             result.AppendLine(string.Format("if(RejectByTimeMat[1,1] = 0) THEN Begin"));
-            result.AppendLine(string.Format("RejectByTimeMat[1,1] = 0;"));
             result.AppendLine(string.Format("return (0);"));
             result.AppendLine(string.Format("END;"));
             result.AppendLine(string.Format("RejectByTimeMat[1,1] = 0;"));
@@ -347,7 +346,7 @@ namespace MyFirstWPF.Services
 
         #region Блоки Невосстанавливаемые системы
 
-        private  string NotRestoredDesigner(GpssInputModel model)
+        private string NotRestoredDesigner(GpssInputModel model)
         {
             var result = new StringBuilder();
             maxRelationCount = model.Nodes.Max(n => n.NodeRelations.Count);
@@ -363,22 +362,19 @@ namespace MyFirstWPF.Services
                 result.Append(node.NodeRelations.Any() ? GetStateBlock(node) : GetNotRestoredStateBlock(node));
             }
 
-            result.Append(GetDeviceBlock("NotWorkDev"));
-            result.Append(GetDeviceBlock("WorkDev"));
+            result.Append(GetNotRestoredDeviceBlock("NotWorkDev"));
+            result.Append(GetNotRestoredDeviceBlock("WorkDev",false));
             result.Append(GetProcedureBlock(model));
 
             return result.ToString();
         }
 
-        private  string GetNotRestoredInitializationBlock(GpssInputModel model)
+        private string GetNotRestoredInitializationBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Инициализирующий блок----------------");
             result.AppendLine(string.Format("Time EQU {0} ; время моелирования", model.ModelingTime));
             result.AppendLine(string.Format("ObservationTime EQU {0} ; время наблюдения", model.ObservationTime));
-            result.AppendLine("True EQU 1");
-            result.AppendLine("False EQU 0");
-
             foreach (var node in model.Nodes)
             {
                 foreach (var relation in node.NodeRelations)
@@ -390,50 +386,47 @@ namespace MyFirstWPF.Services
             result.AppendLine("");
             result.AppendLine("NextStateMat MATRIX ,1,2; матрица для хранения времени и следующего состояния");
 
-            result.AppendLine(string.Format("StateTimeMat MATRIX ,1,{0}; матрица для хранения времени и следующего состояния", model.Nodes.Count()));
-            result.AppendLine(string.Format("StateCountMat MATRIX ,1,{0}; матрица для хранения времени и следующего состояния", model.Nodes.Count()));
-            result.AppendLine(string.Format("RejectByTimeMat MATRIX ,1,3; матрица для хранения времени и следующего состояния"));
+            result.AppendLine(string.Format("StateTimeMat MATRIX ,1,{0}; матрица времен нахождения системы в соответсвующем состоянии", model.Nodes.Count()));
+            result.AppendLine(string.Format("StateCountMat MATRIX ,1,{0}; матрица количества попаданий системы в соответсвующем состоянии", model.Nodes.Count()));
+            result.AppendLine(string.Format("RejectByTimeMat MATRIX ,1,3; вспомогательная матрица. 1 - Количество отказов за одно наблюдение, 2 - Количество измерений, 3 - Количество отказов за все время наблюдение"));
 
-          
+
             result.AppendLine("initial x$CorrectStateId,0 ;Метка для коррекции");
-            result.AppendLine("initial x$IsCorrect,0 ; нужна ли коррекция ");
-            result.AppendLine(string.Format("initial x$StartStateMet,State{0}Met; стартовое состояние", model.Nodes.Single(n=>n.IsStartNode).Id));
-            result.AppendLine(string.Format("initial x$ProbRejectByTime,0 ; коэффициент готовности"));
-            result.AppendLine(string.Format("initial x$RejectTime,0 ; в готовности"));
+            result.AppendLine(string.Format("initial x$StartStateMet,State{0}Met; стартовое состояние", model.Nodes.Single(n => n.IsStartNode).Id));
+            result.AppendLine(string.Format("initial x$RejectCount,0 ; Количество отказов за время наблюдения"));
+            result.AppendLine(string.Format("initial x$RejectTime,0 ; Суммарное время до первого отказа за все время наблюдения"));
 
 
             result.AppendLine("");
 
-            foreach (var node in model.Nodes)
-            {
-                foreach (var relation in node.NodeRelations)
-                {
-                    result.AppendLine(string.Format("initial x$LambdaTime{0}_{1},0 ; время по интенсивности", node.Id, relation.NodeId));
-                }
-            }
+            //foreach (var node in model.Nodes)
+            //{
+            //    foreach (var relation in node.NodeRelations)
+            //    {
+            //        result.AppendLine(string.Format("initial x$LambdaTime{0}_{1},0 ; время по интенсивности", node.Id, relation.NodeId));
+            //    }
+            //}
 
             result.AppendLine(";---------------------------------------------------------------");
 
             return result.ToString();
         }
 
-        private  string GetNotRestoredStateBlock(Node node)
+        private string GetNotRestoredStateBlock(Node node)
         {
             var result = new StringBuilder();
             result.AppendLine(string.Format(";--Состояние {0}-----------------------", node.Id));
 
             result.AppendLine(string.Format("State{0}Met SAVEVALUE CorrectStateId,{0}", node.Id));
             result.AppendLine(string.Format("MSAVEVALUE StateCountMat+,1,{0},1", nodeIdDic[node.Id]));
-            result.AppendLine(string.Format("MSAVEVALUE RejectByTimeMat+,1,1,1"));
-            result.AppendLine(string.Format("SAVEVALUE RejectTime+,(C1-p$StartTime)"));
 
-            result.AppendLine(string.Format("TRANSFER ,x$StartStateMet"));
+            result.AppendLine(string.Format("TRANSFER ,NotWorkDevMet"));
             result.AppendLine(";---------------------------------------------------------------");
 
             return result.ToString();
         }
 
-        private  string GetNotRestoredFinishBlock(GpssInputModel model)
+        private string GetNotRestoredFinishBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             var sumString = new StringBuilder();
@@ -451,7 +444,7 @@ namespace MyFirstWPF.Services
             }
             sumWork.Remove(sumWork.Length - 1, 1);
 
-            result.AppendLine(";--Конечный блок--------------------");
+            result.AppendLine(";--Результирующий блок--------------------");
             result.AppendLine(string.Format("GENERATE Time"));
             result.AppendLine(string.Format("SAVEVALUE correctTime,(CorrectStateTime(x$CorrectStateId,C1))"));
             result.AppendLine(string.Format("FinishMet SAVEVALUE TimeAll,C1"));
@@ -469,9 +462,9 @@ namespace MyFirstWPF.Services
                 sumCountNotWork.Append(string.Format("mx$StateCountMat(1,{0})+", nodeIdDic[node.Id]));
             }
             sumCountNotWork.Remove(sumCountNotWork.Length - 1, 1);
-           
-      
-            result.AppendLine(string.Format("SAVEVALUE ProbReject,(1-(x$ProbRejectByTime/mx$RejectByTimeMat(1,2)))"));
+
+
+            result.AppendLine(string.Format("SAVEVALUE ProbReject,(1-(x$RejectCount/mx$RejectByTimeMat(1,2)))"));
             result.AppendLine(string.Format("SAVEVALUE MidRejectTime,(x$RejectTime/mx$RejectByTimeMat(1,3))"));
 
 
@@ -482,7 +475,7 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private  string GetNotRestoredStartBlock(GpssInputModel model)
+        private string GetNotRestoredStartBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Стартовый блок----------------");
@@ -496,14 +489,37 @@ namespace MyFirstWPF.Services
             return result.ToString();
         }
 
-        private  string GetNotRestoredObservTimeBlock(GpssInputModel model)
+        private string GetNotRestoredObservTimeBlock(GpssInputModel model)
         {
             var result = new StringBuilder();
             result.AppendLine(";--Блок наблюдения----------------");
             result.AppendLine("GENERATE	ObservationTime,,,,");
-            result.AppendLine("SAVEVALUE ProbRejectByTime+,(CurrrentRejectProb())");
+            result.AppendLine("SAVEVALUE RejectCount+,(CurrrentRejectProb())");
             result.AppendLine(string.Format("Terminate"));
 
+            result.AppendLine(";---------------------------------------------------------------");
+
+            return result.ToString();
+        }
+
+        private string GetNotRestoredDeviceBlock(string name, bool rejectDev = true)
+        {
+            var result = new StringBuilder();
+            result.AppendLine(";--Устройство--------------------");
+            result.AppendLine(string.Format("{0}Met SEIZE {0}", name));
+
+            if (rejectDev)
+            {
+                result.AppendLine("MSAVEVALUE RejectByTimeMat+,1,1,1");
+                result.AppendLine("SAVEVALUE RejectTime+,(C1-p$StartTime)");
+            }
+            else
+            {
+                result.AppendLine("ADVANCE p$Time");
+            }
+            result.AppendLine(string.Format("RELEASE {0}", name));
+
+            result.AppendLine(rejectDev ? "TRANSFER ,x$StartStateMet" : "TRANSFER ,p$ReturnState");
             result.AppendLine(";---------------------------------------------------------------");
 
             return result.ToString();
