@@ -87,10 +87,10 @@ namespace MyFirstWPF.Services
             result.AppendLine("initial x$CurrentWorkTime,0"); // Хранит суммарное время рабочих состояний, после отказа обнуляется
             result.AppendLine("initial x$workTimeTest,0"); // Тестовое значение наработки на отказ, суммирует x$CurrentWorkTime при отказе
 
-            result.AppendLine("initial x$kGotov,0 ; коэффициент готовности");
+          
             result.AppendLine("initial x$CorrectStateId,0 ;Метка для коррекции");
             result.AppendLine("initial x$IsCorrect,0 ; нужна ли коррекция ");
-            result.AppendLine("initial x$kGotov,0 ; коэффициент готовности");
+           
 
             result.AppendLine("");
 
@@ -234,16 +234,16 @@ namespace MyFirstWPF.Services
             result.AppendLine(";--Результирующий блок--------------------");
             result.AppendLine(string.Format("GENERATE Time"));
             result.AppendLine(string.Format("SAVEVALUE correctTime,(CorrectStateTime(x$CorrectStateId,C1))"));
-            result.AppendLine(string.Format("FinishMet SAVEVALUE TimeAll,({0})", sumString));
-            result.AppendLine(string.Format("SAVEVALUE notWorkTimeAll,({0})", sumNotWork));
+            result.AppendLine(string.Format("FinishMet SAVEVALUE notWorkTimeAll,({0})", sumNotWork));
             result.AppendLine(string.Format("SAVEVALUE workTimeAll,({0})", sumWork));
 
             foreach (var node in model.Nodes)
             {
-                result.AppendLine(string.Format("SAVEVALUE prob{0},(MX$StateTimeMat(1,{1})/x$TimeAll)", node.Id, nodeIdDic[node.Id]));
+                result.AppendLine(string.Format("SAVEVALUE prob{0},(MX$StateTimeMat(1,{1})/Time)", node.Id, nodeIdDic[node.Id]));
             }
 
-            result.AppendLine(string.Format("SAVEVALUE kGotov,(x$workTimeAll/(x$notWorkTimeAll+x$workTimeAll))"));
+            result.AppendLine(string.Format("SAVEVALUE K_G,(FR$WorkDev/(1000))"));
+            result.AppendLine(string.Format("SAVEVALUE K_P,(FR$NotWorkDev/(1000))"));
 
             var sumCountWork = new StringBuilder();
             foreach (var node in model.Nodes.Where(n => !n.IsRejectionNode))
@@ -263,7 +263,8 @@ namespace MyFirstWPF.Services
             result.AppendLine(string.Format("SAVEVALUE T,(x$workTimeAll/({0}))", sumCountNotWork));
             result.AppendLine(string.Format("SAVEVALUE T_new,(x$workTimeTest/({0}))", sumCountNotWork));
 
-            result.AppendLine(string.Format("SAVEVALUE Tv,(x$notWorkTimeAll/({0}))", sumCountNotWork));
+          //  result.AppendLine(string.Format("SAVEVALUE Tv,(x$notWorkTimeAll/({0}))", sumCountNotWork));
+            result.AppendLine(string.Format("SAVEVALUE Tv,(FT$Dev)"));
 
 
             var bezOtkazRab = new StringBuilder();
