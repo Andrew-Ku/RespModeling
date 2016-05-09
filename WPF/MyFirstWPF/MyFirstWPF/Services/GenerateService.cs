@@ -136,7 +136,7 @@ namespace MyFirstWPF.Services
         private string GetDeviceBlock(string name, bool rejectDev = true)
         {
             var result = new StringBuilder();
-            result.AppendLine(";--Устройство--------------------");
+            result.AppendLine(rejectDev ? "Нерабочее устройство" : "Рабочее устройство");
             result.AppendLine(string.Format("{0}Met SEIZE {0}", name));
 
             if (rejectDev)
@@ -506,7 +506,7 @@ namespace MyFirstWPF.Services
         private string GetNotRestoredDeviceBlock(string name, bool rejectDev = true)
         {
             var result = new StringBuilder();
-            result.AppendLine(";--Устройство--------------------");
+            result.AppendLine(rejectDev ? "Нерабочее устройство" : "Рабочее устройство");
             result.AppendLine(string.Format("{0}Met SEIZE {0}", name));
 
             if (rejectDev)
