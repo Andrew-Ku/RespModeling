@@ -29,22 +29,22 @@
         <DockPanel MinHeight="50" MinWidth="50" LastChildFill="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="1" Grid.Row="0" Grid.RowSpan="1" Margin="10,10,22,21" Width="NaN" Height="NaN" x:Name="dockPanel1">
             <ToolBarTray DockPanel.Dock="Top">
                 <ToolBar>
-                    <Button x:Name="NewButton" Click="NewButton_OnClick" Content="New"/>
-                    <Button x:Name="OpenButton" Click="OpenButton_OnClick" Content="Open"/>
-                    <Button x:Name="SaveButton" Click="SaveButton_OnClick" Content="Save"/>
-                    <Button Content="Help"/>
+                    <Button x:Name="NewButton" Click="NewButton_OnClick" Content="Новый"/>
+                    <Button x:Name="OpenButton" Click="OpenButton_OnClick" Content="Открыть"/>
+                    <Button x:Name="SaveButton" Click="SaveButton_OnClick" Content="Сохранить"/>
+                    <Button Content="Помощь"/>
                 </ToolBar>
             </ToolBarTray>
-            
+
             <StatusBar  DockPanel.Dock="Bottom">
                 <StatusBarItem>
-                    <Label x:Name="MoveXPosLabel" Content="X" MinWidth="30" HorizontalContentAlignment="Right"/>
+                    <Label Visibility="Hidden" x:Name="MoveXPosLabel" Content="X" MinWidth="30" HorizontalContentAlignment="Right"/>
                 </StatusBarItem>
                 <StatusBarItem>
-                    <Label x:Name="MoveYPosLabel" Content="Y" MinWidth="30" HorizontalContentAlignment="Right"/>
+                    <Label Visibility="Hidden" x:Name="MoveYPosLabel" Content="Y" MinWidth="30" HorizontalContentAlignment="Right"/>
                 </StatusBarItem>
             </StatusBar>
-            
+
             <StackPanel DockPanel.Dock="Left" Orientation="Vertical" MinWidth="150" Background="WhiteSmoke" Width="113" >
                 <Border BorderBrush="Black" BorderThickness="0 0 0 2">
                     <Label Content="Состояние" FontSize="14" Background="Beige"/>
@@ -70,7 +70,7 @@
 
                     <CheckBox Grid.Row="2" x:Name="RejectionNodeCheckBox" Grid.Column="0" Content="Отказной узел" Grid.ColumnSpan="2" Margin="0,0,26,5"/>
                     <Button Grid.Row="3" Grid.Column="0" Margin="5,1,2,5" Click="SaveEditNodeButton_OnClick" Content="Сохранить"/>
-                   
+
                 </Grid>
 
                 <Border BorderBrush="Black" BorderThickness="0 2 0 0">
@@ -113,10 +113,9 @@
             </StackPanel>
             <StackPanel x:Name="RightStackPanel"  DockPanel.Dock="Right" Orientation="Vertical" MinWidth="140" Background="WhiteSmoke" HorizontalAlignment="Right">
 
-                <Grid Height="100">
+                <Grid Height="50">
                     <Grid.RowDefinitions>
                         <RowDefinition />
-                        <RowDefinition/>
                         <RowDefinition/>
 
 
@@ -131,14 +130,14 @@
 
                     <Label x:Name="StateCountLabel"   Grid.Row="0" Grid.Column="1" Content="" HorizontalContentAlignment="Left"/>
                     <Label x:Name="EdgeCountLabel"  Grid.Row="1" Grid.Column="1" Content="" HorizontalContentAlignment="Left"/>
-                    <Button Grid.Row="2" x:Name="GenerateButton"  Margin="12,58,9,-157" Click="GenerateButton_OnClick" Content="Генерация" Grid.ColumnSpan="2"/>
+                    <Button Grid.Row="1" x:Name="GenerateButton"  Margin="12,48,9,-78" Click="GenerateButton_OnClick" Content="Генерация" Grid.ColumnSpan="2"/>
                 </Grid>
 
             </StackPanel>
             <Border Width="auto" Height="auto" BorderBrush="DarkSlateGray" BorderThickness="1">
                 <ScrollViewer Name="WorkPlaceScrollViewer" Height="auto" Width="auto" VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Auto">
-                <Canvas x:Name="WorkPlaceCanvas" 
+                    <Canvas x:Name="WorkPlaceCanvas" 
 					Background="Azure" 
 					MouseLeftButtonDown="WorkPlaceCanvas_MouseLeftButtonDown" 
 					MouseMove="WorkPlaceCanvas_MouseMove"

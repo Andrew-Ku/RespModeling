@@ -24,6 +24,17 @@ namespace MyFirstWPF.Services
             };
         }
 
+        public Rectangle GetRectangle(double radius, Brush rectangleColor, Brush borderColor)
+        {
+            return new Rectangle()
+            {
+                Height = radius,
+                Width = radius,
+                Fill = rectangleColor,
+                Stroke = borderColor
+            };
+        }
+
         /// <summary>
         /// Установка цета узла
         /// </summary>

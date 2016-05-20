@@ -1,22 +1,19 @@
 ;--Инициализирующий блок----------------
 Time EQU 1000000 ; время моелирования
-True EQU 1
-False EQU 0
-Lambda0_1 EQU 1
-Lambda1_0 EQU 1
+ObservationTime EQU 10 ; время наблюдения
+Lambda0_1 EQU 0.001
+Lambda1_2 EQU 0.001
+Lambda1_0 EQU 0.003
 
 NextStateMat MATRIX ,1,2; матрица для хранения времени и следующего состояния
-StateTimeMat MATRIX ,1,2; матрица для хранения времени и следующего состояния
-StateCountMat MATRIX ,1,2; матрица для хранения времени и следующего состояния
-initial x$workTimeAll,0
-initial x$notWorkTimeAll,0
-initial x$CurrentWorkTime,0
-initial x$workTimeTest,0
+StateTimeMat MATRIX ,1,3; матрица времен нахождения системы в соответсвующем состоянии
+StateCountMat MATRIX ,1,3; матрица количества попаданий системы в соответсвующем состоянии
+RejectByTimeMat MATRIX ,1,3; вспомогательная матрица. 1 - Количество отказов за одно наблюдение, 2 - Количество измерений, 3 - Количество отказов за все время наблюдение
 initial x$CorrectStateId,0 ;Метка для коррекции
-initial x$IsCorrect,0 ; нужна ли коррекция 
+initial x$StartStateMet,State0Met; стартовое состояние
+initial x$RejectCount,0 ; Количество отказов за время наблюдения
+initial x$RejectTime,0 ; Суммарное время до первого отказа за все время наблюдения
 
-initial x$LambdaTime0_1,0 ; время по интенсивности
-initial x$LambdaTime1_0,0 ; время по интенсивности
 ;---------------------------------------------------------------
 ;--Непонятный блок----------------
 START 1
@@ -25,28 +22,26 @@ RMULT 1281
 ;--Результирующий блок--------------------
 GENERATE Time
 SAVEVALUE correctTime,(CorrectStateTime(x$CorrectStateId,C1))
-FinishMet SAVEVALUE notWorkTimeAll,(MX$StateTimeMat(1,2))
-SAVEVALUE workTimeAll,(MX$StateTimeMat(1,1))
-SAVEVALUE prob0,(MX$StateTimeMat(1,1)/Time)
-SAVEVALUE prob1,(MX$StateTimeMat(1,2)/Time)
-SAVEVALUE K_G,(FR$WorkDev/(1000))
-SAVEVALUE K_P,(FR$NotWorkDev/(1000))
-SAVEVALUE T,(x$workTimeAll/(mx$StateCountMat(1,2)))
-SAVEVALUE T_new,(x$workTimeTest/(mx$StateCountMat(1,2)))
-SAVEVALUE Tv,(FT$Dev)
-SAVEVALUE T_bezOtkaz,(mx$StateTimeMat(1,1)/mx$StateCountMat(1,1))
+FinishMet SAVEVALUE TimeAll,C1
+SAVEVALUE ProbReject,(1-(x$RejectCount/mx$RejectByTimeMat(1,2)))
+SAVEVALUE MidRejectTime,(x$RejectTime/mx$RejectByTimeMat(1,3))
 TERMINATE 1 
 ;--------------------------------------------------------------
 ;--Стартовый блок----------------
 GENERATE	,,,1,
 SEIZE NotWorkDev
 RELEASE NotWorkDev
-TRANSFER ,State0Met
+TRANSFER ,x$StartStateMet
+;---------------------------------------------------------------
+;--Блок наблюдения----------------
+GENERATE	ObservationTime,,,,
+SAVEVALUE RejectCount+,(CurrrentRejectProb())
+Terminate
 ;---------------------------------------------------------------
 ;--Состояние 0-----------------------
 State0Met SAVEVALUE LambdaTime0_1,(Exponential(1,0,1/Lambda0_1))
 ASSIGN ReturnState,ReturnState0Met
-SAVEVALUE procHelpfulPar,(ChooseNextStateProc(x$LambdaTime0_1,State1Met))
+SAVEVALUE procHelpfulPar,(ChooseNextStateProc(x$LambdaTime0_1,State1Met,999999,999999))
 ASSIGN Time,MX$NextStateMat(1,1)
 ASSIGN State,MX$NextStateMat(1,2)
 ASSIGN StartTime,C1
@@ -58,24 +53,30 @@ ReturnState0Met MSAVEVALUE StateTimeMat+,1,1,p$Time
 TRANSFER ,p$State
 ;---------------------------------------------------------------
 ;--Состояние 1-----------------------
-State1Met SAVEVALUE LambdaTime1_0,(Exponential(1,0,1/Lambda1_0))
+State1Met SAVEVALUE LambdaTime1_2,(Exponential(1,0,1/Lambda1_2))
+SAVEVALUE LambdaTime1_0,(Exponential(1,0,1/Lambda1_0))
 ASSIGN ReturnState,ReturnState1Met
-SAVEVALUE procHelpfulPar,(ChooseNextStateProc(x$LambdaTime1_0,State0Met))
+SAVEVALUE procHelpfulPar,(ChooseNextStateProc(x$LambdaTime1_2,State2Met,x$LambdaTime1_0,State0Met))
 ASSIGN Time,MX$NextStateMat(1,1)
 ASSIGN State,MX$NextStateMat(1,2)
 SAVEVALUE CorrectStateId,1
 MSAVEVALUE StateCountMat+,1,2,1
-TRANSFER ,NotWorkDevMet
+SAVEVALUE CurrentWorkTime+,p$Time
+TRANSFER ,WorkDevMet
 ReturnState1Met MSAVEVALUE StateTimeMat+,1,2,p$Time
 TRANSFER ,p$State
 ;---------------------------------------------------------------
-;--Нерабочее устройство---------
+;--Состояние 2-----------------------
+State2Met SAVEVALUE CorrectStateId,2
+MSAVEVALUE StateCountMat+,1,3,1
+TRANSFER ,NotWorkDevMet
+;---------------------------------------------------------------
+;--Нерабочее устройство--------
 NotWorkDevMet SEIZE NotWorkDev
- SAVEVALUE workTimeTest+,x$CurrentWorkTime
-SAVEVALUE CurrentWorkTime,0
-ADVANCE p$Time
+MSAVEVALUE RejectByTimeMat+,1,1,1
+SAVEVALUE RejectTime+,(C1-p$StartTime)
 RELEASE NotWorkDev
-TRANSFER ,p$ReturnState
+TRANSFER ,x$StartStateMet
 ;---------------------------------------------------------------
 ;--Рабочее устройство--------
 WorkDevMet SEIZE WorkDev
@@ -85,10 +86,11 @@ TRANSFER ,p$ReturnState
 ;---------------------------------------------------------------
 ;--Блок процедур----------------
 ;--Процедура для поиска слудующего состояния ----------------
-PROCEDURE ChooseNextStateProc(timeArg0,nextStateArg0)
+PROCEDURE ChooseNextStateProc(timeArg0,nextStateArg0,timeArg1,nextStateArg1)
 BEGIN
 TEMPORARY minTime,nextState;
 minTime = timeArg0; nextState = nextStateArg0;
+IF (minTime>timeArg1) THEN BEGIN minTime = timeArg1; nextState = nextStateArg1; END;
 NextStateMat[1,1] = minTime; NextStateMat[1,2] = nextState;
 Return (nextState);
 END;
@@ -100,7 +102,7 @@ BEGIN
 TEMPORARY countState,result;
 countState = 1;
 sumStateTimes = 0;
-WHILE (countState <= 2) DO BEGIN
+WHILE (countState <= 3) DO BEGIN
 sumStateTimes = sumStateTimes + StateTimeMat[1,countState];
 countState = countState+1;
 END;
